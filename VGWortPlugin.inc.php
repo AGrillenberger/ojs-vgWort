@@ -379,6 +379,14 @@ class VGWortPlugin extends GenericPlugin {
      */
     function pixelExecuteSubmission($hookName, $params) {
         $publication =& $params[0];
+		$publicationData = $params[2];
+		error_log("VGWortPlugin: publicationData = " . var_export($publicationData, true));
+		if(!array_key_exists('vgWort::pixeltag::assign', $publicationData)
+			|| !array_key_exists('vgWort::texttype', $publicationData) ) {
+			// do not execute hook when the vgWort data is not set
+			error_log("VGWortPlugin: skipped hook");
+			return false;
+		}
         $submissionId = $publication->getData('submissionId');
         $submissionFileDao =& DAORegistry::getDAO('SubmissionFileDAO');
         $submissionDao = DAORegistry::getDAO('SubmissionDAO');
