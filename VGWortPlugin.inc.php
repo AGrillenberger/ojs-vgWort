@@ -657,6 +657,9 @@ class VGWortPlugin extends GenericPlugin {
      */
     function handleTemplateDisplay($hookName, $params) {
         $smarty =& $params[0];
+        $context = $smarty->getTemplateVars('currentJournal');
+        error_log("context: " . var_export($context,true));
+
         $template =& $params[1];
         $ojsVersion = Application::getApplication()->getCurrentVersion()->getVersionString();
         // the template for the pdf viewer looks like this:
@@ -677,7 +680,9 @@ class VGWortPlugin extends GenericPlugin {
             case 'workflow/workflow.tpl':
 				$this->import('classes.form.VGWortForm');
 				$context = $smarty->getTemplateVars('currentJournal');
-				$submission = $smarty->getTemplateVars('submission');
+                error_log("context: " . var_export($context->getPath(),true));
+
+                $submission = $smarty->getTemplateVars('submission');
 				$request = Application::get()->getRequest();
 				$latestPublicationApiUrl = $request->getDispatcher()->url(
                     $request,
