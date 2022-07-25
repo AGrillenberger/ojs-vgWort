@@ -150,15 +150,14 @@ class VGWortEditorAction {
 
 		// check if the requirements for the registration are fulfilled
 		$checkResult = $this->check($pixelTag, $request);
-
+        error_log("checkResult: ". var_export($checkResult,true));
 		$isError = !$checkResult[0];
 		$errorMsg = null;
 		if ($isError) {
 			$errorMsg = $checkResult[1];
-		} else {
+        } else {
 			// register
 			$registerResult = $this->newMessage($pixelTag, $request, $contextId);
-
 			$isError = !$registerResult[0];
 			$errorMsg = $registerResult[1];
 			if (!$isError) {
