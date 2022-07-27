@@ -675,6 +675,14 @@ class VGWortPlugin extends GenericPlugin {
                 $smarty->registerFilter('output',array($this, 'insertPixelTagIssueTOC'));
                 break;
             case 'workflow/workflow.tpl':
+
+                // $submissionDao = DAORegistry::getDAO('SubmissionDAO');
+                // $testSubmission = $submissionDao->getById(1);
+                // $publication = $testSubmission->getCurrentPublication();
+                // error_log("OJS getCurrentPublication: " . var_export($publication,true));
+                // $galleys = $publication->getData('galleys');
+                // error_log("OJS: galleys: " . var_export($galleys,true));
+
 				$this->import('classes.form.VGWortForm');
 				$context = $smarty->getTemplateVars('currentJournal');
 				$submission = $smarty->getTemplateVars('submission');
