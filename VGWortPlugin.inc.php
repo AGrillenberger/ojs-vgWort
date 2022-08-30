@@ -380,7 +380,7 @@ class VGWortPlugin extends GenericPlugin {
     function pixelExecuteSubmission($hookName, $params) {
         $publication =& $params[0];
 		$publicationData = $params[2];
-		error_log("VGWortPlugin: publicationData = " . var_export($publicationData, true));
+		// error_log("VGWortPlugin: publicationData = " . var_export($publicationData, true));
 		if(!array_key_exists('vgWort::pixeltag::assign', $publicationData)
 			|| !array_key_exists('vgWort::texttype', $publicationData) ) {
 			// do not execute hook when the vgWort data is not set
@@ -666,7 +666,7 @@ class VGWortPlugin extends GenericPlugin {
     function handleTemplateDisplay($hookName, $params) {
         $smarty =& $params[0];
         $context = $smarty->getTemplateVars('currentJournal');
-        error_log("context: " . var_export($context,true));
+        // error_log("context: " . var_export($context,true));
 
         $template =& $params[1];
         $ojsVersion = Application::getApplication()->getCurrentVersion()->getVersionString();
@@ -688,7 +688,7 @@ class VGWortPlugin extends GenericPlugin {
             case 'workflow/workflow.tpl':
 				$this->import('classes.form.VGWortForm');
 				$context = $smarty->getTemplateVars('currentJournal');
-                error_log("context: " . var_export($context->getPath(),true));
+                // error_log("context: " . var_export($context->getPath(),true));
 
                 $submission = $smarty->getTemplateVars('submission');
 				$request = Application::get()->getRequest();
