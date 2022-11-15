@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE version SYSTEM "../../../lib/pkp/dtd/pluginVersion.dtd">
+
+<!--
+  * version.xml
+  *
+  * Copyright (c) 2018 Center for Digital Systems (CeDiS), Freie Universität Berlin
+  * Copyright (c) 2022 Heidelberg University Library
+  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
+  *
+  * Plugin version information.
+-->
+
+<version>
+    <application>vgWort</application>
+    <type>plugins.generic</type>
+    <release>1.0.0.0</release>
+    <date>2022-10-24</date>
+    <lazy-load>1</lazy-load>
+    <class>VGWortPlugin</class>
+</version>
