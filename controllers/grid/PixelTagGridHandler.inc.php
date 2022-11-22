@@ -143,8 +143,8 @@ class PixelTagGridHandler extends GridHandler {
 
     function getFilterColumns() {
         return [
-            PT_FIELD_PRIVCODE => __('plugins.generic.vgWort.pixeltag.privateCode'),
-            PT_FIELD_PUBCODE => __('plugins.generic.vgWort.pixeltag.publicCode')
+            PT_FIELD_PRIVCODE => __('plugins.generic.vgWort.pixelTag.privateCode'),
+            PT_FIELD_PUBCODE => __('plugins.generic.vgWort.pixelTag.publicCode')
         ];
     }
 

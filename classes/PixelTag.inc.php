@@ -30,7 +30,6 @@ class PixelTag extends DataObject {
     }
 
     function &getSubmission() {
-        // $submissionDao = Application::getDAO('SubmissionDAO');
         $submissionDao = DAORegistry::getDAO('SubmissionDAO');
         $submission = $submissionDao->getById($this->getSubmissionId());
         return $submission;
@@ -114,7 +113,8 @@ class PixelTag extends DataObject {
         return $this->setData('status', $status);
     }
 
-    function getStatusString() {
+    function getStatusString()
+    {
         switch ($this->getData('status')) {
             case PT_STATUS_AVAILABLE:
                 return __('plugins.generic.vgWort.pixelTag.status.available');
@@ -145,10 +145,10 @@ class PixelTag extends DataObject {
     }
 
     function getTextTypeOptions() {
-        static $textTypeOptions = array(
+        static $textTypeOptions = [
             TYPE_TEXT => 'plugins.generic.vgWort.pixelTag.textType.text',
             TYPE_LYRIC => 'plugins.generic.vgWort.pixelTag.textType.lyric'
-        );
+        ];
         return $textTypeOptions;
     }
 

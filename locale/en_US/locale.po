@@ -84,13 +84,13 @@ msgid "plugins.generic.vgWort.pixelTag.status"
 msgstr "Status"
 
 msgid "plugins.generic.vgWort.pixelTag.status.available"
-msgstr ""
+msgstr "Available"
 
 msgid "plugins.generic.vgWort.pixelTag.status.unregistered.active"
 msgstr "Unregistered, active"
 
 msgid "plugins.generic.vgWort.pixelTag.status.unregistered.active.notPublished"
-msgstr ""
+msgstr "Unregistered, active (not published)"
 
 msgid "plugins.generic.vgWort.pixelTag.status.unregistered.removed"
 msgstr "Unregistered, removed"
@@ -111,24 +111,3 @@ msgstr "Register"
 msgid "plugins.generic.vgWort.pixelTags.register.confirm"
 msgstr "Are you sure you want to register this pixel tag?"
 
-
-msgid ""
-msgstr ""
-
-msgid ""
-msgstr ""
-
-msgid ""
-msgstr ""
-
-msgid ""
-msgstr ""
-
-msgid ""
-msgstr ""
-
-msgid ""
-msgstr ""
-
-msgid ""
-msgstr ""
