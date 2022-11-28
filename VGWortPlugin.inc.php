@@ -127,7 +127,7 @@ class VGWortPlugin extends GenericPlugin {
      */
     function isSitePlugin()
     {
-        return true;
+        return false;
     }
 
     // TODO: SOAP will no longer be used. Other requirements need to be checked.
@@ -149,6 +149,15 @@ class VGWortPlugin extends GenericPlugin {
         // TODO: ojsVersion?
         $ojsVersion = Application::getApplication()->getCurrentVersion()->getVersionString();
         return parent::getTemplatePath();
+    }
+
+    /**
+     * Get installation script
+     */
+    function getInstallMigration()
+    {
+        $this->import('VGWortMigration');
+        return new VGWortMigration();
     }
 
     /**
