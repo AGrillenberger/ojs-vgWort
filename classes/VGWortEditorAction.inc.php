@@ -288,19 +288,22 @@ class VGWortEditorAction {
      */
     function newMessage($pixelTag, $request, $contextId = NULL)
     {
+
         // $ompVersion = Application::getApplication()->getCurrentVersion()->getVersionString();
         $vgWortPlugin = $this->_plugin;
+        if (!isset($contextId)) {
+            $contextId = $vgWortPlugin->getCurrentContextId();
+        }
         $vgWortUserId = $vgWortPlugin->getSetting($contextId, 'vgWortUserId');
         $vgWortUserPassword = $vgWortPlugin->getSetting($contextId, 'vgWortUserPassword');
         $vgWortTestAPI = $vgWortPlugin->getSetting($contextId, 'vgWortTestAPI');
+        // TODO: Settings werden nicht abgespeichert!
+        // $vgWortUserId = 'akonopka';
+        // $vgWortUserPassword = 'FdhdGg!15';
 
         $vgWortAPI = NEW_MESSAGE;
         if ($vgWortTestAPI) {
             $vgWortAPI = NEW_MESSAGE_TEST;
-        }
-
-        if (!isset($contextId)) {
-            $contextId = $vgWortPlugin->getCurrentContextId();
         }
 
         $vgWortPlugin->import('classes.PixelTag'); // TODO: Brauchen wir das?
@@ -357,9 +360,9 @@ class VGWortEditorAction {
         $publication = $submission->getCurrentPublication();
         $publicationFormats = $publication->getData('publicationFormats');
 
-        foreach ($publicationFormats as $publicationFormat) {
-            $submissionFiles = $vgWortPlugin->getSubmissionFiles($submission, $publicationFormat);
-        }
+        // foreach ($publicationFormats as $publicationFormat) {
+        //     $submissionFiles = $vgWortPlugin->getSubmissionFiles($submission, $publicationFormat);
+        // }
         //die();
 
         // Get publication formats that are allowed by VG Wort.
@@ -377,23 +380,32 @@ class VGWortEditorAction {
         //     }
         //     return $vgWortPlugin->getSupportedFileTypes($submissionFiles->getData('mimetype'));
         // });
-
+        foreach ($supportedPublicationFormats as $supportedPublicationFormat) {
+            error_log("suppPubFormat: " . var_export($supportedPublicationFormat,true));
+            $submissionFiles = $vgWortPlugin->getSubmissionFiles($submission, $supportedPublicationFormat)->_current;
+            error_log("submissionFiles: " . var_export($submissionFiles,true));
+            error_log("submissionFiles->getId(): " . var_export($submissionFiles->getId(),true));
+            // error_log("suppPubFormat: " . $supportedPublicationFormat->getId());
+        }
         //$webranges = ['webrange' => []];
         $webranges = [];
 
         $dispatcher = Application::get()->getDispatcher();
         foreach ($supportedPublicationFormats as $supportedPublicationFormat) {
+            $submissionFiles = $vgWortPlugin->getSubmissionFiles($submission, $supportedPublicationFormat)->_current;
             $url = $dispatcher->url(
                 $request,
                 ROUTE_PAGE,
                 NULL,
-                'article',
+                'catalog',
                 'view',
                 [
+                    'psp', // TODO: Zeitschriftenkürzel einfügen
                     $submission->getId(),//getBestArticleId(),
-                    $supportedPublicationFormat->getId() // ?getBestGalleyId
+                    $submissionFiles->getId() // ?getBestGalleyId
                 ]
             );
+            error_log("urls: " . $url);
             $webrange = ['urls' => [$url]];
             $webranges[] = $webrange;
 
@@ -401,11 +413,12 @@ class VGWortEditorAction {
                 $request,
                 ROUTE_PAGE,
                 NULL,
-                'article',
+                'catalog',
                 'view',
                 [
                     $submission->getId(),//getBestArticleId(),
-                    $supportedPublicationFormat->getId()//getBestGalleyId()
+                    $submissionFiles->getId()
+                    // $supportedPublicationFormat->getId()//getBestGalleyId()
                 ]
             );
             $webrange = ['urls' => [$downlaodUrl1]];
@@ -415,11 +428,12 @@ class VGWortEditorAction {
                 $request,
                 ROUTE_PAGE,
                 NULL,
-                'article',
+                'catalog',
                 'view',
                 [
                     $submission->getId(),//getBestArticleId(),
-                    $supportedPublicationFormat->getId(),//getBestGalleyId()
+                    $submissionFiles->getId()
+                    // $supportedPublicationFormat->getId(),//getBestGalleyId()
                     //getFileId
                 ]
             );
@@ -495,29 +509,35 @@ class VGWortEditorAction {
             'participants' => $participants,
             'privateidentificationid' => $pixelTag->getPrivateCode(),
             'messagetext' => $message,
-            'webranges' => $webranges
+            'webranges' => $webranges,
+            "distributionRight" => true,
+            "publicAccessRight" => true,
+            "reproductionRight" => true,
+            "rightsGrantedConfirmation" => true
         ];
         // error_log("participants: " . json_encode($participants, JSON_PRETTY_PRINT));
-        // error_log("webranges: " . json_encode($webrange, JSON_PRETTY_PRINT));
-        error_log("data: " . json_encode($data, JSON_PRETTY_PRINT));
+        error_log("webranges: " . var_export($webranges,true));//json_encode($webrange, JSON_PRETTY_PRINT));
+        //error_log("data: " . json_encode($data, JSON_PRETTY_PRINT));
         try {
             if (!$vgWortPlugin->requirementsFulfilled()) {
                 return [false, __('plugins.generic.vgWort.requirementsRequired')];
             }
             // error_log("[VGWortEditorAction] newMessage() data: " .  json_encode($data, JSON_PRETTY_PRINT));
             // $this->_checkService($vgWortUserId, $vgWortUserPassword, $vgWortAPI);
-            $debug = fopen("/var/www/html/omp-3-3/files/vgwort-guzzle.log", "a+");
+            // $debug = fopen("/var/www/html/omp-3-3/files/vgwort-guzzle.log", "a+");
+            // error_log("vgWortUserId: " . var_export($vgWortUserId,true));
+            // error_log("vgWortUserPassword: " . var_export($vgWortUserPassword,true));
             $response = $httpClient->request(
                 'POST',
                 $vgWortAPI,
                 [
                     'json' => $data,
                     'auth' => [$vgWortUserId, $vgWortUserPassword],
-                    'debug' => $debug
+                    // 'debug' => $debug
                 ]
             );
             $response = json_decode($response->getBody(), false);
-
+            // error_log("[[VGWortEditorAction]] response: " . var_export($response,true));
             return [true, $response];
         }
         catch (\GuzzleHttp\Exception\ClientException $e) {
