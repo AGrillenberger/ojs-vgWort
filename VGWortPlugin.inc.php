@@ -83,11 +83,11 @@ class VGWortPlugin extends GenericPlugin {
             HookRegistry::register('Publication::edit', [$this, 'pixelExecuteSubmission']);
 
             $this->pixelTagStatusLabels = [
-                0 => __('plugins.generic.vgWort.pixeltag.status.notassigned'),
-                PT_STATUS_REGISTERED_ACTIVE => __('plugins.generic.vgWort.pixeltag.status.registered.active'),
-                PT_STATUS_UNREGISTERED_ACTIVE => __('plugins.generic.vgWort.pixeltag.status.unregistered.active'),
-                PT_STATUS_REGISTERED_REMOVED => __('plugins.generic.vgWort.pixeltag.status.registered.removed'),
-                PT_STATUS_UNREGISTERED_REMOVED => __('plugins.generic.vgWort.pixeltag.status.unregistered.removed')
+                0 => __('plugins.generic.vgWort.pixelTag.status.notassigned'),
+                PT_STATUS_REGISTERED_ACTIVE => __('plugins.generic.vgWort.pixelTag.status.registered.active'),
+                PT_STATUS_UNREGISTERED_ACTIVE => __('plugins.generic.vgWort.pixelTag.status.unregistered.active'),
+                PT_STATUS_REGISTERED_REMOVED => __('plugins.generic.vgWort.pixelTag.status.registered.removed'),
+                PT_STATUS_UNREGISTERED_REMOVED => __('plugins.generic.vgWort.pixelTag.status.unregistered.removed')
             ];
 
         }
@@ -130,9 +130,7 @@ class VGWortPlugin extends GenericPlugin {
         return true;
     }
 
-    /**
-     *
-     */
+    // TODO: SOAP will no longer be used. Other requirements need to be checked.
     function requirementsFulfilled()
     {
         $isSoapExtension = in_array('soap', get_loaded_extensions());
@@ -148,6 +146,7 @@ class VGWortPlugin extends GenericPlugin {
      */
     function getTemplatePath($inCore = false)
     {
+        // TODO: ojsVersion?
         $ojsVersion = Application::getApplication()->getCurrentVersion()->getVersionString();
         return parent::getTemplatePath();
     }
@@ -437,6 +436,9 @@ class VGWortPlugin extends GenericPlugin {
         return false;
     }
 
+    /**
+     * Hook callback for extending "Edit Chapter" form.
+     */
     public function handleChapterFormDisplay($hookName, $args)
     {
         $request = Application::get()->getRequest();
@@ -481,7 +483,7 @@ class VGWortPlugin extends GenericPlugin {
         }
 
         try {
-            $templateMgr->registerFilter('output', [$this, 'chapterFormFilter']);
+            $templateMgr->registerFilter('output', [$this, '_chapterFormFilter']);
         } catch (SmartyException $e) {
             return false;
         }
@@ -489,7 +491,7 @@ class VGWortPlugin extends GenericPlugin {
         return false;
     }
 
-    public function chapterFormFilter($output, $templateMgr)
+    public function _chapterFormFilter($output, $templateMgr)
     {
         if (preg_match('/<div[\s\S]*id="authors\[\]"/', $output, $matches, PREG_OFFSET_CAPTURE)) {
             $offset = $matches[0][1];
@@ -497,14 +499,14 @@ class VGWortPlugin extends GenericPlugin {
             $newOutput .= $templateMgr->fetch($this->getTemplateResource('vgWortChapter.tpl'));
             $newOutput .= substr($output, $offset);
             $output = $newOutput;
-            $templateMgr->unregisterFilter('output', [$this, 'chapterFormFilter']);
+            $templateMgr->unregisterFilter('output', [$this, '_chapterFormFilter']);
         }
 
         return $output;
     }
 
     /**
-     * Hook callback for executing chapter form.
+     * Hook callback for executing "Edit Chapter" form.
      *
      * @param string $hookName
      * @param array $args
@@ -563,44 +565,14 @@ class VGWortPlugin extends GenericPlugin {
     }
 
     /**
-     * Hook callback for adding VG Wort pixel to PDF JS Viewer.
-     *
-     * @param string $hookName
-     * @param array $args
-     */
-    function insertPixelTagJSViewer($hookName, $args)
-    {
-        $templateMgr =& $args[1];
-        $output =& $args[2];
-
-        $press = $templateMgr->get_template_vars('currentContext');
-        $monograph = $templateMgr->get_template_vars('publishedSubmission');
-
-        if (isset($press) && !empty($monograph)) {
-            if (isset($monograph) && !empty($monograph)) {
-                $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
-                $pixelTag = $pixelTagDao->getPixelTagBySubmissionId($monograph->getId(), $press->getId());
-                if (isset($pixelTag) && !$pixelTag->getDateRemoved()) {
-                    $application = PKPApplication::getApplication();
-                    $request = $application->getRequest();
-                    $httpsProtocol = $request->getProtocol() == 'https';
-                    $output = $this->buildPixelTagHTML($pixelTag, $httpsProtocol);
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Hook callback
      *
      * @param string $hookName
      * @param array $args
      */
-    function handleTemplateDisplay($hookName, $params) {
-        $templateMgr =& $params[0];
-        $template =& $params[1];
+    function handleTemplateDisplay($hookName, $args) {
+        $templateMgr =& $args[0];
+        $template =& $args[1];
         $ompVersion = Application::getApplication()->getCurrentVersion()->getVersionString();
 
         if (strstr($template, "submissionGalley.tpl")) {
@@ -650,18 +622,30 @@ class VGWortPlugin extends GenericPlugin {
 
                 $publication = $submission->getCurrentPublication();
                 $publicationFormats = $publication->getData('publicationFormats');
-                $supportedPublicationFormats = array_filter($publicationFormats, [$this, 'publicationFormatsSupported']);
+                //error_log("publicationFormats: " . var_export($publicationFormats,true));
+                //$supportedPublicationFormats = array_filter($publicationFormats, [$this, 'checkPublicationFormatSupported']);
+                $supportedPublicationFormats = array_filter($publicationFormats, function($publicationFormat) use($submission){
+                    $submissionFiles = $this->getSubmissionFiles($submission, $publicationFormat)->_current;
+                    if (!$submissionFiles) {
+                        return false;
+                    }
+                    $megaByte = 1024*1024;
+                    if (round((int) $publicationFormat->getFileSize() / $megaByte > 15)) {
+                        return false;
+                    }
+                    return $this->getSupportedFileTypes($submissionFiles->getData('mimetype'));
+                });
 
-                import('lib.pkp.classes.submission.SubmissionFile'); // File constants
-                foreach ($publicationFormats as $publicationFormat) {
-                    $stageMonographFiles = Services::get('submissionFile')->getMany([
-                        'submissionIds' => [$publication->getData('submissionId')],
-                        'fileStages' => [SUBMISSION_FILE_PROOF],
-                        'assocTypes' => [ASSOC_TYPE_PUBLICATION_FORMAT],
-                        'assocIds' => [$publicationFormat->getId()],
-                    ]);
-                    $supportedPublicationFormats = $this->publicationFormatsSupported($publicationFormat);
-                }
+                // import('lib.pkp.classes.submission.SubmissionFile'); // File constants
+                // foreach ($publicationFormats as $publicationFormat) {
+                //     $stageMonographFiles = Services::get('submissionFile')->getMany([
+                //         'submissionIds' => [$publication->getData('submissionId')],
+                //         'fileStages' => [SUBMISSION_FILE_PROOF],
+                //         'assocTypes' => [ASSOC_TYPE_PUBLICATION_FORMAT],
+                //         'assocIds' => [$publicationFormat->getId()],
+                //     ]);
+                //     $supportedPublicationFormats = $this->checkPublicationFormatSupported($submission, $publicationFormat);
+                // }
 
             $templateMgr->addJavaScript(
                 'vgWort',
@@ -678,7 +662,6 @@ class VGWortPlugin extends GenericPlugin {
         }
         return false;
     }
-
 
     /**
      * Hook callback
@@ -740,6 +723,91 @@ class VGWortPlugin extends GenericPlugin {
     }
 
     /**
+     *
+     */
+    function insertPixelTagSubmissionPage($output, $templateMgr) {
+        $press = $templateMgr->get_template_vars('currentContext');
+        $monograph = $templateMgr->get_template_vars('publishedSubmission'); // NICHT "monograph"
+
+        $publicationFormats = $templateMgr->get_template_vars('publicationFormats');
+        $availableFiles = $templateMgr->get_template_vars('availableFiles');
+
+        $submissionDao = DAORegistry::getDAO('SubmissionDAO');
+        $submission = $submissionDao->getById($monograph->getId());
+        $contextId = $submission->getData('contextId');
+
+        if (isset($submission)) {
+            $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
+            $pixelTag = $pixelTagDao->getPixelTagBySubmissionId($submission->getId(), $contextId);
+            if (isset($pixelTag) && !$pixelTag->getDateRemoved()) {
+                $application = PKPApplication::getApplication();
+                $request = $application->getRequest();
+                $httpProtocol = $request->getProtocol() == 'https' ? 'https://' : 'http://';
+                $pixelTagSrc = $httpProtocol . $pixelTag->getDomain() . '/na/' . $pixelTag->getPublicCode();
+                $pixelTagImg = '<img src=\'' . $pixelTagSrc . '\' width=\'1\' height=\'1\' alt=\'\' />';
+
+                if (!empty($publicationFormats)) {
+                    $search = '<div class="entry_details">';
+                    $replace = $search . '<script>function vgwPixelCall(galleyId) { document.getElementById("div_vgwpixel_"+galleyId).innerHTML="<img src=\'' . $pixelTagSrc . '\' width=\'1\' height=\'1\' alt=\'\' />"; }</script>';
+                    $output = str_replace($search, $replace, $output);
+                    foreach ($publicationFormats as $publicationFormat) {
+                        $submissionFile = $this->getSubmissionFiles($submission, $publicationFormat)->_current;
+                        // error_log("[VGWortPlugin] submissionFile: " . var_export(get_class($submissionFile),true));
+                        // change galley download links
+                        $publicationFormatUrl = $request->url(
+                            null,
+                            'catalog',
+                            'view',
+                            [
+                                $submission->getBestId(),
+                                $publicationFormat->getId(),
+                                $submissionFile->getId()
+                            ]
+                        );
+
+                        $search = '#<a (.*)href="' . $publicationFormatUrl . '"(.*)>#';
+                        // insert pixel tag for galleys download links using JS
+                        $replace = '<div style="font-size:0;line-height:0;width:0;" id="div_vgwpixel_' . $publicationFormat->getId() . '"></div><a class="$1" href="' . $publicationFormatUrl . '" onclick="vgwPixelCall(' . $publicationFormat->getId() . ');">';
+                        // insert pixel tag for galleys download links using VG Wort redirect
+                        $output = preg_replace($search, $replace, $output);
+                    }
+                }
+            }
+        }
+        return $output;
+    }
+
+    /**
+     * Hook callback for adding VG Wort pixel to PDF JS Viewer.
+     *
+     * @param string $hookName
+     * @param array $args
+     */
+    function insertPixelTagJSViewer($hookName, $args)
+    {
+        $templateMgr =& $args[1];
+        $output =& $args[2];
+
+        $press = $templateMgr->get_template_vars('currentContext');
+        $monograph = $templateMgr->get_template_vars('publishedSubmission');
+
+        if (isset($press) && !empty($monograph)) {
+            if (isset($monograph) && !empty($monograph)) {
+                $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
+                $pixelTag = $pixelTagDao->getPixelTagBySubmissionId($monograph->getId(), $press->getId());
+                if (isset($pixelTag) && !$pixelTag->getDateRemoved()) {
+                    $application = PKPApplication::getApplication();
+                    $request = $application->getRequest();
+                    $httpsProtocol = $request->getProtocol() == 'https';
+                    $output = $this->buildPixelTagHTML($pixelTag, $httpsProtocol);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Build HTML code for the pixel tag.
      *
      * @param PixelTag $pixelTag
@@ -748,7 +816,7 @@ class VGWortPlugin extends GenericPlugin {
     function buildPixelTagHTML($pixelTag, $https = false)
     {
         $httpProtocol = $https ? 'https://' : 'http://';
-        $pixelTagSrc = $httpProtocol . $$pixelTag->getDomain() . '/na/' . $pixelTag->getPublicCode();
+        $pixelTagSrc = $httpProtocol . $pixelTag->getDomain() . '/na/' . $pixelTag->getPublicCode();
         return '<img src=\'' . $pixelTagSrc . '\' width=\'1\' height=\'1\' alt=\'\' />';
     }
 
@@ -757,7 +825,8 @@ class VGWortPlugin extends GenericPlugin {
      * @param Object $pubObject Publication or Chapter
      * @param PixelTag $pixelTag
      */
-    function pixelExecute($submission, $pubObject, $pixelTag) {
+    function pixelExecute($submission, $pubObject, $pixelTag)
+    {
         $vgWortTextType = $pubObject->getData('vgWort::texttype');
         $chapterId = NULL;
         if (isset($pixelTag)) {
@@ -818,7 +887,8 @@ class VGWortPlugin extends GenericPlugin {
      * @param string hookName
      * @param array args
      */
-    function pixelExecuteSubmission($hookName, $args) {
+    function pixelExecuteSubmission($hookName, $args)
+    {
         $publication =& $args[0];
         $publicationData = $args[2];
 
@@ -848,7 +918,8 @@ class VGWortPlugin extends GenericPlugin {
      * @param int $vgWortTextType
      * @return boolean
      */
-    function assignPixelTag($submission, $vgWortTextType, $chapterId = NULL) {
+    function assignPixelTag($submission, $vgWortTextType, $chapterId = NULL)
+    {
         $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
         $contextId = $submission->getContextId();
         error_log("[VG Wort] assignPixelTag(): contextId=" . var_export($contextId,true));
@@ -868,7 +939,7 @@ class VGWortPlugin extends GenericPlugin {
                 import('classes.notification.NotificationManager');
                 $notificationManager = new NotificationManager();
                 $notificationManager->createTrivialNotification(
-                    $user->getId(), NOTIFICATION_TYPE_FORM_ERROR, array('contents' => $orderResult[1])
+                    $user->getId(), NOTIFICATION_TYPE_FORM_ERROR, ['contents' => $orderResult[1]]
                     // $user->getId(), NOTIFICATION_TYPE_FORM_ERROR, array('contents' => 'Not Found')
                 );
                 return false;
@@ -891,39 +962,49 @@ class VGWortPlugin extends GenericPlugin {
         return true;
     }
 
-    /**
-     * Check whether publication format is supported.
-     *
-     * @param PublicationFormat $publicationFormat
-     * @return bool
-     */
-    function publicationFormatsSupported($publicationFormat) {
-        $publication = Services::get('publication')->get($publicationFormat->getData('publicationId'));
-        import('lib.pkp.classes.submission.SubmissionFile'); // File constants
-        $stageMonographFiles = Services::get('submissionFile')->getMany([
-            'submissionIds' => [$publication->getData('submissionId')],
-            'fileStages' => [SUBMISSION_FILE_PROOF],
-            'assocTypes' => [ASSOC_TYPE_PUBLICATION_FORMAT],
-            'assocIds' => [$publicationFormat->getId()],
-        ]);
-        if (!$stageMonographFiles->_current) {
-            return false;
-        }
-
-        $megaByte = 1024*1024;
-        if (round((int) $publicationFormat->getFileSize() / $megaByte > 15)) {
-            return false;
-        }
-
-        return $this->fileTypeSupported($stageMonographFiles->_current->getData('mimetype'));
-    }
+    // /**
+    //  * Check whether publication format is supported.
+    //  *
+    //  * @param PublicationFormat $publicationFormat
+    //  * @return bool
+    //  */
+    // function _checkPublicationFormatSupported($submission, $publicationFormat)
+    // {
+    //     $submissionFiles = $this->getSubmissionFiles($submission, $publicationFormat)->_current;
+    //     if (!$submissionFiles) {
+    //         return false;
+    //     }
+    //     $megaByte = 1024*1024;
+    //     if (round((int) $publicationFormat->getFileSize() / $megaByte > 15)) {
+    //         return false;
+    //     }
+    //     return $this->getSupportedFileTypes($submissionFiles->getData('mimetype'));
+    //     // $publication = Services::get('publication')->get($publicationFormat->getData('publicationId'));
+    //     // import('lib.pkp.classes.submission.SubmissionFile'); // File constants
+    //     // $stageMonographFiles = Services::get('submissionFile')->getMany([
+    //     //     'submissionIds' => [$publication->getData('submissionId')],
+    //     //     'fileStages' => [SUBMISSION_FILE_PROOF],
+    //     //     'assocTypes' => [ASSOC_TYPE_PUBLICATION_FORMAT],
+    //     //     'assocIds' => [$publicationFormat->getId()],
+    //     // ]);
+    //     // if (!$stageMonographFiles->_current) {
+    //     //     return false;
+    //     // }
+    //     //
+    //     // $megaByte = 1024*1024;
+    //     // if (round((int) $publicationFormat->getFileSize() / $megaByte > 15)) {
+    //     //     return false;
+    //     // }
+    //     //
+    //     // return $this->fileTypeSupported($stageMonographFiles->_current->getData('mimetype'));
+    // }
 
     /**
      * Return all supported file types.
      *
      * @param array $fileType
      */
-    function fileTypeSupported($fileType) {
+    function getSupportedFileTypes($fileType) {
         return ($fileType == 'application/pdf' ||
         $fileType == 'application/epub+zip' ||
         // Added XML support. Check with vgWort if allowed
@@ -932,21 +1013,25 @@ class VGWortPlugin extends GenericPlugin {
     }
 
     /**
-     * Get publication file corresponding to this publication format.
+     * Get all submission files that belong to a given publication format.
      *
-     * @param Submission $submission
      * @param PublicationFormat $publicationFormat
      */
-    function getSubmissionFile($submission, $publicationFormat) {
+    function getSubmissionFiles($submission, $publicationFormat)
+    {
         $publication = $submission->getCurrentPublication();
+        //$publication = Services::get('publication')->get($publicationFormat->getData('publicationId')); // TODO: Is this the current version?
         import('lib.pkp.classes.submission.SubmissionFile'); // File constants
-        $submissionFile = Services::get('submissionFile')->getMany([
+        $submissionFiles = Services::get('submissionFile')->getMany([
             'submissionIds' => [$publication->getData('submissionId')],
             'fileStages' => [SUBMISSION_FILE_PROOF],
             'assocTypes' => [ASSOC_TYPE_PUBLICATION_FORMAT],
             'assocIds' => [$publicationFormat->getId()],
         ]);
-        return $submissionFile->_current;
+        // $submissionFiles is an iterator?
+        // error_log("[[VGWortPlugin]] getSubmissionFiles: " . var_export($submissionFiles->_current,true));
+        // die();
+        return $submissionFiles;
     }
 
     /**
@@ -973,16 +1058,70 @@ class VGWortPlugin extends GenericPlugin {
      * @param Array $publicationFormts
      * @param int $publicationFormatId
      */
-    function getPublicationFormatById($publicationFormats, $publicationFormatId) {
-        foreach ($publicationFormats as $publicationFormat) {
-            if ($publicationFormat->getData('id') == $publicationFormatId) {
-                return $publicationFormat;
-            }
-        }
-    }
+    //function getPublicationFormatById($publicationFormats, $publicationFormatId) {
+    //    foreach ($publicationFormats as $publicationFormat) {
+    //        if ($publicationFormat->getData('id') == $publicationFormatId) {
+    //            return $publicationFormat;
+    //        }
+    //    }
+    //}
 
     //function _getPublicationFormatById($publicationFormat, $value) {
     //    return $publicationFormat->getData('id') == $value;
     //}
+
+    /**
+     * Get submission file of full document.
+     *
+     * @param array $submissionFiles
+     */
+    function getBookManuscriptFile($submissionFiles)
+    {
+        // Get genre ID that corresponds to the book manuscript.
+        $genreDao = DAORegistry::getDAO('GenreDAO');
+        $genreBook = $genreDao->getByKey('MANUSCRIPT');
+        $genreIdBook = $genreBook->getId();
+
+        // Return submission file with genre ID from above.
+        foreach ($submissionFiles as $submissionFile) {
+            $genreIdSubmissionFile = $submissionFile->getData('genreId');
+            if (!$genreIdSubmissionFile) {
+                return false;
+            } else {
+                if ($genreIdSubmissionFile != $genreIdBook) {
+                    continue;
+                } else {
+                    return $submissionFile;
+                }
+            }
+        }
+        // TODO: What if there are more than one book manuscript components?
+    }
+
+    // /**
+    //  * Get all submission files of chapter documents.
+    //  *
+    //  * @param SubmissionFile
+    //  */
+    // function getChapterManuscriptFile($submissionFiles)
+    // {
+    //     // Get genre ID that corresponds to the chapter manuscript.
+    //     $genreDao = DAORegistry::getDAO('GenreDAO');
+    //     $genreChapter = $genreDao->getByKey('CHAPTER');
+    //     $genreIdChapter = $genreChapter->getId();
+    //
+    //     // // Create json because array_column does not accept SubmissionFile objects.
+    //     // $submissionFiles_json = json_decode(json_encode($submissionFiles), true);
+    //
+    //     $submissionFilesChapter = [];
+    //     foreach ($submissionFiles as $submissionFile) {
+    //         if ($submissionFile->getData('genreId') = $genreIdChapter) {
+    //             $submissionFilesChapter[] = $submissionFile;
+    //         }
+    //     }
+    //
+    //     return array_column($submissionFiles_array, NULL, 'genreId')[$genreIdManuscript];
+    // }
+
 
 }
