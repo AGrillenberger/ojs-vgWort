@@ -176,7 +176,7 @@ class VGWortEditorAction {
             error_log("[VGWortEditorAction] registerPixelTag() registerResult: " . var_export($registerResult,true));
             $isError = !$registerResult[0];
             $errorMsg = $registerResult[1];
-            error_log("vgwort newMessage error: " . $errorMsg);
+            error_log("vgwort newMessage error: " . var_export($errorMsg,true));
             if (!$isError) {
                 $pixelTag->setDateRegistered(Core::getCurrentDate());
                 $pixelTag->setMessage(NULL);
@@ -313,7 +313,9 @@ class VGWortEditorAction {
 
         // Get authors and translators
         $contributors = $submission->getAuthors();
-        $submissionAuthors = array_filter($contributors, [$this, '_filterAuthors']);
+        error_log("[VG Wort] contributors: " . var_export($contributors,true));
+        $submissionAuthors = array_filter($contributors, [$this, '_filterChapterAuthors']);
+        error_log("[VGWort] submissionAuthors: " . var_export($submissionAuthors,true));
         $submissionTranslators = array_filter($contributors, [$this, '_filterTranslators']);
         assert(!empty($submissionAuthors) || !empty($submissionTranslators));
         $participants = [];
@@ -381,11 +383,11 @@ class VGWortEditorAction {
         //     return $vgWortPlugin->getSupportedFileTypes($submissionFiles->getData('mimetype'));
         // });
         foreach ($supportedPublicationFormats as $supportedPublicationFormat) {
-            error_log("suppPubFormat: " . var_export($supportedPublicationFormat,true));
+            //error_log("suppPubFormat: " . var_export($supportedPublicationFormat,true));
             $submissionFiles = $vgWortPlugin->getSubmissionFiles($submission, $supportedPublicationFormat)->_current;
-            error_log("submissionFiles: " . var_export($submissionFiles,true));
-            error_log("submissionFiles->getId(): " . var_export($submissionFiles->getId(),true));
-            // error_log("suppPubFormat: " . $supportedPublicationFormat->getId());
+            //error_log("submissionFiles: " . var_export($submissionFiles,true));
+            //error_log("submissionFiles->getId(): " . var_export($submissionFiles->getId(),true));
+            //error_log("suppPubFormat: " . $supportedPublicationFormat->getId());
         }
         //$webranges = ['webrange' => []];
         $webranges = [];
@@ -400,8 +402,8 @@ class VGWortEditorAction {
                 'catalog',
                 'view',
                 [
-                    'psp', // TODO: Zeitschriftenkürzel einfügen
                     $submission->getId(),//getBestArticleId(),
+                    $supportedPublicationFormat->getId(),
                     $submissionFiles->getId() // ?getBestGalleyId
                 ]
             );
@@ -497,6 +499,7 @@ class VGWortEditorAction {
             'text' => $text,
             'lyric' => $isLyric
         ];
+        //error_log("[VGWortPlugin] message: " . var_export($message,true));
 
         $httpClient = Application::get()->getHttpClient();
         // $webrange = [];
@@ -515,8 +518,8 @@ class VGWortEditorAction {
             "reproductionRight" => true,
             "rightsGrantedConfirmation" => true
         ];
-        // error_log("participants: " . json_encode($participants, JSON_PRETTY_PRINT));
-        error_log("webranges: " . var_export($webranges,true));//json_encode($webrange, JSON_PRETTY_PRINT));
+        //error_log("participants: " . json_encode($participants, JSON_PRETTY_PRINT));
+        //error_log("webranges: " . var_export($webranges,true));//json_encode($webrange, JSON_PRETTY_PRINT));
         //error_log("data: " . json_encode($data, JSON_PRETTY_PRINT));
         try {
             if (!$vgWortPlugin->requirementsFulfilled()) {
@@ -589,24 +592,54 @@ class VGWortEditorAction {
         return $this->_plugin->getSupportedFileTypes($submissionFiles->getData('mimetype'));
     }
 
-
+    /**
+     * Filter Authors
+     *
+     * @param $contributor
+     */
     function _filterAuthors($contributor) {
         $userGroup = $contributor->getUserGroup();
+        error_log("[VG Wort] userGroup: " . var_export($userGroup,true));
         return $userGroup->getData('nameLocaleKey') == 'default.groups.name.author';
     }
 
-    function _filterTranslators($contributor) {
+    /**
+     * Filter volume editor
+     */
+    function _filterVolumeEditors($contributor)
+    {
+        $userGroup = $contributor->getUserGroup();
+        return $userGroup->getData('nameLocaleKey') == 'default.groups.name.volumeEditor';
+    }
+
+    /**
+     * Filter chapter authors
+     */
+    function _filterChapterAuthors($contributor)
+    {
+        $userGroup = $contributor->getUserGroup();
+        error_log("[VG Wort] _filterChapterAuthors() userGroup: " . var_export($userGroup,true));
+        return $userGroup->getData('nameLocaleKey') == 'default.groups.name.chapterAuthor';
+    }
+
+    /**
+     * Filter translators
+     */
+    function _filterTranslators($contributor)
+    {
         $userGroup = $contributor->getUserGroup();
         return $userGroup->getData('nameLocaleKey') == 'default.groups.name.translator';
     }
 
-    function getSubmissionByPublicationFormat($publicationFormat) {
+    function getSubmissionByPublicationFormat($publicationFormat)
+    {
         $publicationId = $publicationFormat->getData('publicationId');
         $publication = Services::get('publication')->get($publicationId);
         return Services::get('submission')->get($publication->getData('submissionId'));
     }
 
-    function _filterDEPublicationFormats($publicationFormat) {
+    function _filterDEPublicationFormats($publicationFormat)
+    {
         $submission = $this->getSubmissionByPublicationFormat($publicationFormat);
         $submissionFile = $this->_plugin->getSubmissionFiles($submission, $publicationFormat);
         return $submissionFile->_current->getData('locale') == 'de_DE';
