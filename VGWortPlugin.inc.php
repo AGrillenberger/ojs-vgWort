@@ -631,8 +631,6 @@ class VGWortPlugin extends GenericPlugin {
 
                 $publication = $submission->getCurrentPublication();
                 $publicationFormats = $publication->getData('publicationFormats');
-                //error_log("publicationFormats: " . var_export($publicationFormats,true));
-                //$supportedPublicationFormats = array_filter($publicationFormats, [$this, 'checkPublicationFormatSupported']);
                 $supportedPublicationFormats = array_filter($publicationFormats, function($publicationFormat) use($submission){
                     $submissionFiles = $this->getSubmissionFiles($submission, $publicationFormat)->_current;
                     if (!$submissionFiles) {
@@ -644,18 +642,7 @@ class VGWortPlugin extends GenericPlugin {
                     }
                     return $this->getSupportedFileTypes($submissionFiles->getData('mimetype'));
                 });
-
-                // import('lib.pkp.classes.submission.SubmissionFile'); // File constants
-                // foreach ($publicationFormats as $publicationFormat) {
-                //     $stageMonographFiles = Services::get('submissionFile')->getMany([
-                //         'submissionIds' => [$publication->getData('submissionId')],
-                //         'fileStages' => [SUBMISSION_FILE_PROOF],
-                //         'assocTypes' => [ASSOC_TYPE_PUBLICATION_FORMAT],
-                //         'assocIds' => [$publicationFormat->getId()],
-                //     ]);
-                //     $supportedPublicationFormats = $this->checkPublicationFormatSupported($submission, $publicationFormat);
-                // }
-
+                
             $templateMgr->addJavaScript(
                 'vgWort',
                 Application::get()->getRequest()->getBaseUrl()
@@ -931,7 +918,6 @@ class VGWortPlugin extends GenericPlugin {
     {
         $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
         $contextId = $submission->getContextId();
-        error_log("[VG Wort] assignPixelTag(): contextId=" . var_export($contextId,true));
         // TODO: it seems possible to order just 1 pixel tag
         $availablePixelTag = $pixelTagDao->getAvailablePixelTag($contextId);
 
@@ -949,7 +935,6 @@ class VGWortPlugin extends GenericPlugin {
                 $notificationManager = new NotificationManager();
                 $notificationManager->createTrivialNotification(
                     $user->getId(), NOTIFICATION_TYPE_FORM_ERROR, ['contents' => $orderResult[1]]
-                    // $user->getId(), NOTIFICATION_TYPE_FORM_ERROR, array('contents' => 'Not Found')
                 );
                 return false;
             } else {
@@ -970,43 +955,6 @@ class VGWortPlugin extends GenericPlugin {
         $pixelTagDao->updateObject($availablePixelTag);
         return true;
     }
-
-    // /**
-    //  * Check whether publication format is supported.
-    //  *
-    //  * @param PublicationFormat $publicationFormat
-    //  * @return bool
-    //  */
-    // function _checkPublicationFormatSupported($submission, $publicationFormat)
-    // {
-    //     $submissionFiles = $this->getSubmissionFiles($submission, $publicationFormat)->_current;
-    //     if (!$submissionFiles) {
-    //         return false;
-    //     }
-    //     $megaByte = 1024*1024;
-    //     if (round((int) $publicationFormat->getFileSize() / $megaByte > 15)) {
-    //         return false;
-    //     }
-    //     return $this->getSupportedFileTypes($submissionFiles->getData('mimetype'));
-    //     // $publication = Services::get('publication')->get($publicationFormat->getData('publicationId'));
-    //     // import('lib.pkp.classes.submission.SubmissionFile'); // File constants
-    //     // $stageMonographFiles = Services::get('submissionFile')->getMany([
-    //     //     'submissionIds' => [$publication->getData('submissionId')],
-    //     //     'fileStages' => [SUBMISSION_FILE_PROOF],
-    //     //     'assocTypes' => [ASSOC_TYPE_PUBLICATION_FORMAT],
-    //     //     'assocIds' => [$publicationFormat->getId()],
-    //     // ]);
-    //     // if (!$stageMonographFiles->_current) {
-    //     //     return false;
-    //     // }
-    //     //
-    //     // $megaByte = 1024*1024;
-    //     // if (round((int) $publicationFormat->getFileSize() / $megaByte > 15)) {
-    //     //     return false;
-    //     // }
-    //     //
-    //     // return $this->fileTypeSupported($stageMonographFiles->_current->getData('mimetype'));
-    // }
 
     /**
      * Return all supported file types.
@@ -1029,7 +977,6 @@ class VGWortPlugin extends GenericPlugin {
     function getSubmissionFiles($submission, $publicationFormat)
     {
         $publication = $submission->getCurrentPublication();
-        //$publication = Services::get('publication')->get($publicationFormat->getData('publicationId')); // TODO: Is this the current version?
         import('lib.pkp.classes.submission.SubmissionFile'); // File constants
         $submissionFiles = Services::get('submissionFile')->getMany([
             'submissionIds' => [$publication->getData('submissionId')],
@@ -1037,9 +984,6 @@ class VGWortPlugin extends GenericPlugin {
             'assocTypes' => [ASSOC_TYPE_PUBLICATION_FORMAT],
             'assocIds' => [$publicationFormat->getId()],
         ]);
-        // $submissionFiles is an iterator?
-        // error_log("[[VGWortPlugin]] getSubmissionFiles: " . var_export($submissionFiles->_current,true));
-        // die();
         return $submissionFiles;
     }
 
@@ -1060,24 +1004,6 @@ class VGWortPlugin extends GenericPlugin {
     function getLocaleFromSubmissionFile($submissionFile) {
         return $submissionFile->getData('locale');
     }
-
-    /**
-     * Get publication's format by its ID.
-     *
-     * @param Array $publicationFormts
-     * @param int $publicationFormatId
-     */
-    //function getPublicationFormatById($publicationFormats, $publicationFormatId) {
-    //    foreach ($publicationFormats as $publicationFormat) {
-    //        if ($publicationFormat->getData('id') == $publicationFormatId) {
-    //            return $publicationFormat;
-    //        }
-    //    }
-    //}
-
-    //function _getPublicationFormatById($publicationFormat, $value) {
-    //    return $publicationFormat->getData('id') == $value;
-    //}
 
     /**
      * Get submission file of full document.

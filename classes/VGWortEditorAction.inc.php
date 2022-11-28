@@ -79,7 +79,7 @@ class VGWortEditorAction {
     }
 
     /**
-     *
+     * Update database.
      *
      * @param integer $contextId
      * @param $result
@@ -116,18 +116,6 @@ class VGWortEditorAction {
             return [false, __('plugins.generic.vgWort.check.articleNotPublished')];
         } else {
             $supportedPublicationFormats = array_filter($publicationFormats, [$this, '_checkPublicationFormatSupported']);
-            // $supportedPublicationFormats = array_filter($publicationFormats, function($publicationFormat) use($submission){
-            //     $submissionFiles = $this->_plugin->getSubmissionFiles($submission, $publicationFormat)->_current;
-            //     if (!$submissionFiles) {
-            //         return false;
-            //     }
-            //     $megaByte = 1024*1024;
-            //     if (round((int) $publicationFormat->getFileSize() / $megaByte > 15)) {
-            //         return false;
-            //     }
-            //     return $this->_plugin->getSupportedFileTypes($submissionFiles->getData('mimetype'));
-            // });
-
             if (empty($supportedPublicationFormats)) {
                 return [false, __('plugins.generic.vgWort.check.galleyRequired')];
             } else {
@@ -158,25 +146,16 @@ class VGWortEditorAction {
      */
     function registerPixelTag($pixelTag, $request, $contextId = NULL)
     {
-        //error_log("[VGWortEditorAction] registerPixelTag. pixelTag: " . var_export($pixelTag,true));
-        //error_log("[VGWortEditorAction] registerPixelTag. request: " . var_export($request,true));
-        //die();
         $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
-
         $checkResult = $this->check($pixelTag, $request);
-
         $isError = !$checkResult[0];
         $errorMsg = NULL;
         if ($isError) {
             $errorMsg = $checkResult[1];
-            error_log("[VGWortEditorAction] registerPixelTag() errorMsg: " . $errorMsg);
         } else {
             $registerResult = $this->newMessage($pixelTag, $request, $contextId);
-            //error_log("[VGWortEditorAction] registerResult: " . var_export($registerResult,true));
-            error_log("[VGWortEditorAction] registerPixelTag() registerResult: " . var_export($registerResult,true));
             $isError = !$registerResult[0];
             $errorMsg = $registerResult[1];
-            error_log("vgwort newMessage error: " . var_export($errorMsg,true));
             if (!$isError) {
                 $pixelTag->setDateRegistered(Core::getCurrentDate());
                 $pixelTag->setMessage(NULL);
@@ -185,8 +164,6 @@ class VGWortEditorAction {
                 $this->_removeNotification($pixelTag);
                 $notificationType = NOTIFICATION_TYPE_SUCCESS;
                 $notificationMsg = __('plugins.generic.vgWort.pixelTags.register.success');
-                //error_log("notificationMsg: " . var_export($notificationMsg,true));
-                error_log("[VGWortEditorAction] registerPixelTag() : " . var_export($notificationMsg,true));
             }
         }
         if ($isError) {
@@ -237,7 +214,6 @@ class VGWortEditorAction {
             if (!$vgWortPlugin->requirementsFulfilled()) {
                 return [false, __('plugins.generic.vgWort.requirementsRequired')];
             }
-            // $this->_checkService($vgWortUserId, $vgWortUserPassword, $vgWortAPI);
 
             $response = $httpClient->request(
                 'GET',
@@ -258,8 +234,6 @@ class VGWortEditorAction {
                 $responseBodyAsString = $response->getBody()->getContents();
                 $statusCode = $response->getStatusCode();
                 $reasonPhrase = $response->getReasonPhrase();
-                error_log("[VGWortEditorAction] checkAuthor() Status: " . $statusCode);
-                error_log("[VGWortEditorAction] checkAuthor() Reason: " . $reasonPhrase);
                 return [false, __('plugins.generic.vgWort.order.errorCode') . $reasonPhrase];
             }
         }
@@ -269,8 +243,6 @@ class VGWortEditorAction {
                 $responseBodyAsString = $response->getBody()->getContents();
                 $statusCode = $response->getStatusCode();
                 $reasonPhrase = $response->getReasonPhrase();
-                error_log("[VGWortEditorAction] checkAuthor() Status: " . $statusCode);
-                error_log("[VGWortEditorAction] checkAuthor() Reason: " . $reasonPhrase);
                 return [false, $reasonPhrase];
             }
         }
@@ -288,8 +260,6 @@ class VGWortEditorAction {
      */
     function newMessage($pixelTag, $request, $contextId = NULL)
     {
-
-        // $ompVersion = Application::getApplication()->getCurrentVersion()->getVersionString();
         $vgWortPlugin = $this->_plugin;
         if (!isset($contextId)) {
             $contextId = $vgWortPlugin->getCurrentContextId();
@@ -297,10 +267,6 @@ class VGWortEditorAction {
         $vgWortUserId = $vgWortPlugin->getSetting($contextId, 'vgWortUserId');
         $vgWortUserPassword = $vgWortPlugin->getSetting($contextId, 'vgWortUserPassword');
         $vgWortTestAPI = $vgWortPlugin->getSetting($contextId, 'vgWortTestAPI');
-        // TODO: Settings werden nicht abgespeichert!
-        // $vgWortUserId = 'akonopka';
-        // $vgWortUserPassword = 'FdhdGg!15';
-
         $vgWortAPI = NEW_MESSAGE;
         if ($vgWortTestAPI) {
             $vgWortAPI = NEW_MESSAGE_TEST;
@@ -313,9 +279,7 @@ class VGWortEditorAction {
 
         // Get authors and translators
         $contributors = $submission->getAuthors();
-        error_log("[VG Wort] contributors: " . var_export($contributors,true));
         $submissionAuthors = array_filter($contributors, [$this, '_filterChapterAuthors']);
-        error_log("[VGWort] submissionAuthors: " . var_export($submissionAuthors,true));
         $submissionTranslators = array_filter($contributors, [$this, '_filterTranslators']);
         assert(!empty($submissionAuthors) || !empty($submissionTranslators));
         $participants = [];
@@ -357,39 +321,15 @@ class VGWortEditorAction {
                 };
             };
         }
-        error_log("[vgWortEditorAction] participants: " . var_export(json_encode($participants, JSON_PRETTY_PRINT),true));
 
         $publication = $submission->getCurrentPublication();
         $publicationFormats = $publication->getData('publicationFormats');
 
-        // foreach ($publicationFormats as $publicationFormat) {
-        //     $submissionFiles = $vgWortPlugin->getSubmissionFiles($submission, $publicationFormat);
-        // }
-        //die();
-
         // Get publication formats that are allowed by VG Wort.
         $supportedPublicationFormats = array_filter($publicationFormats, [$this, '_checkPublicationFormatSupported']);
-        // error_log("publicationFormats: " . var_export($publicationFormats,true));
-        // error_log("supportedPublicationFormats: " . var_export($supportedPublicationFormats,true));
-        // $supportedPublicationFormats = array_filter($publicationFormats, function($publicationFormat) use($submission){
-        //     $submissionFiles = $vgWortPlugin->getSubmissionFiles($submission, $publicationFormat)->_current;
-        //     if (!$submissionFiles) {
-        //         return false;
-        //     }
-        //     $megaByte = 1024*1024;
-        //     if (round((int) $publicationFormat->getFileSize() / $megaByte > 15)) {
-        //         return false;
-        //     }
-        //     return $vgWortPlugin->getSupportedFileTypes($submissionFiles->getData('mimetype'));
-        // });
         foreach ($supportedPublicationFormats as $supportedPublicationFormat) {
-            //error_log("suppPubFormat: " . var_export($supportedPublicationFormat,true));
             $submissionFiles = $vgWortPlugin->getSubmissionFiles($submission, $supportedPublicationFormat)->_current;
-            //error_log("submissionFiles: " . var_export($submissionFiles,true));
-            //error_log("submissionFiles->getId(): " . var_export($submissionFiles->getId(),true));
-            //error_log("suppPubFormat: " . $supportedPublicationFormat->getId());
         }
-        //$webranges = ['webrange' => []];
         $webranges = [];
 
         $dispatcher = Application::get()->getDispatcher();
@@ -402,12 +342,11 @@ class VGWortEditorAction {
                 'catalog',
                 'view',
                 [
-                    $submission->getId(),//getBestArticleId(),
+                    $submission->getId(),
                     $supportedPublicationFormat->getId(),
-                    $submissionFiles->getId() // ?getBestGalleyId
+                    $submissionFiles->getId()
                 ]
             );
-            error_log("urls: " . $url);
             $webrange = ['urls' => [$url]];
             $webranges[] = $webrange;
 
@@ -418,9 +357,8 @@ class VGWortEditorAction {
                 'catalog',
                 'view',
                 [
-                    $submission->getId(),//getBestArticleId(),
+                    $submission->getId(),
                     $submissionFiles->getId()
-                    // $supportedPublicationFormat->getId()//getBestGalleyId()
                 ]
             );
             $webrange = ['urls' => [$downlaodUrl1]];
@@ -433,10 +371,8 @@ class VGWortEditorAction {
                 'catalog',
                 'view',
                 [
-                    $submission->getId(),//getBestArticleId(),
+                    $submission->getId(),
                     $submissionFiles->getId()
-                    // $supportedPublicationFormat->getId(),//getBestGalleyId()
-                    //getFileId
                 ]
             );
             $webrange = ['urls' => [$downlaodUrl2]];
@@ -457,8 +393,6 @@ class VGWortEditorAction {
                 $publicationFormat = current($supportedPublicationFormat);
             }
         }
-        // error_log("supportedPublicationFormats: " . var_export($supportedPublicationFormats,true));
-        // error_log("publicationFormat: " . var_export($publicationFormat,true));
         $publicationFormatFile = $vgWortPlugin->getSubmissionFiles($submission, $publicationFormat)->_current;
 
         $content = Services::get('file')->fs->read($publicationFormatFile->getData('path'));
@@ -499,15 +433,8 @@ class VGWortEditorAction {
             'text' => $text,
             'lyric' => $isLyric
         ];
-        //error_log("[VGWortPlugin] message: " . var_export($message,true));
 
         $httpClient = Application::get()->getHttpClient();
-        // $webrange = [];
-        // $webrange[] = [
-        //     "urls" => [
-        //         "http://localhost/omp-3-3/index.php/psp/catalog/view/psp/3/20"
-        //     ]
-        // ];
         $data = [
             'participants' => $participants,
             'privateidentificationid' => $pixelTag->getPrivateCode(),
@@ -518,18 +445,10 @@ class VGWortEditorAction {
             "reproductionRight" => true,
             "rightsGrantedConfirmation" => true
         ];
-        //error_log("participants: " . json_encode($participants, JSON_PRETTY_PRINT));
-        //error_log("webranges: " . var_export($webranges,true));//json_encode($webrange, JSON_PRETTY_PRINT));
-        //error_log("data: " . json_encode($data, JSON_PRETTY_PRINT));
         try {
             if (!$vgWortPlugin->requirementsFulfilled()) {
                 return [false, __('plugins.generic.vgWort.requirementsRequired')];
             }
-            // error_log("[VGWortEditorAction] newMessage() data: " .  json_encode($data, JSON_PRETTY_PRINT));
-            // $this->_checkService($vgWortUserId, $vgWortUserPassword, $vgWortAPI);
-            // $debug = fopen("/var/www/html/omp-3-3/files/vgwort-guzzle.log", "a+");
-            // error_log("vgWortUserId: " . var_export($vgWortUserId,true));
-            // error_log("vgWortUserPassword: " . var_export($vgWortUserPassword,true));
             $response = $httpClient->request(
                 'POST',
                 $vgWortAPI,
@@ -540,7 +459,6 @@ class VGWortEditorAction {
                 ]
             );
             $response = json_decode($response->getBody(), false);
-            // error_log("[[VGWortEditorAction]] response: " . var_export($response,true));
             return [true, $response];
         }
         catch (\GuzzleHttp\Exception\ClientException $e) {
@@ -549,9 +467,6 @@ class VGWortEditorAction {
                 $responseBodyAsString = $response->getBody()->getContents();
                 $statusCode = $response->getStatusCode();
                 $reasonPhrase = $response->getReasonPhrase();
-                error_log("[VGWortEditorAction] ClientException: newMessage() vgwort API " . $vgWortAPI);
-                error_log("[VGWortEditorAction] ClientException: newMessage() API error statusCode " . $statusCode);
-                error_log("[VGWortEditorAction] ClientException: newMessage() API error responseBody " . $responseBodyAsString);
                 return [false, __('plugins.generic.vgWort.order.errorCode') . $reasonPhrase];
             }
         }
@@ -561,9 +476,6 @@ class VGWortEditorAction {
                 $responseBodyAsString = $response->getBody()->getContents();
                 $statusCode = $response->getStatusCode();
                 $reasonPhrase = $response->getReasonPhrase();
-                error_log("[VGWortEditorAction] ServerException: newMessage() vgwort API " . $vgWortAPI);
-                error_log("[VGWortEditorAction] ServerException: newMessage() API error statusCode " . $statusCode);
-                error_log("[VGWortEditorAction] ServerException: newMessage() API error responseBody " . $responseBodyAsString);
                 return [false, $reasonPhrase];
             }
         }
@@ -593,18 +505,17 @@ class VGWortEditorAction {
     }
 
     /**
-     * Filter Authors
+     * Filter authors.
      *
      * @param $contributor
      */
     function _filterAuthors($contributor) {
         $userGroup = $contributor->getUserGroup();
-        error_log("[VG Wort] userGroup: " . var_export($userGroup,true));
         return $userGroup->getData('nameLocaleKey') == 'default.groups.name.author';
     }
 
     /**
-     * Filter volume editor
+     * Filter volume editor.
      */
     function _filterVolumeEditors($contributor)
     {
@@ -613,17 +524,16 @@ class VGWortEditorAction {
     }
 
     /**
-     * Filter chapter authors
+     * Filter chapter authors.
      */
     function _filterChapterAuthors($contributor)
     {
         $userGroup = $contributor->getUserGroup();
-        error_log("[VG Wort] _filterChapterAuthors() userGroup: " . var_export($userGroup,true));
         return $userGroup->getData('nameLocaleKey') == 'default.groups.name.chapterAuthor';
     }
 
     /**
-     * Filter translators
+     * Filter translators.
      */
     function _filterTranslators($contributor)
     {
