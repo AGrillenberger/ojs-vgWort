@@ -504,15 +504,15 @@ class VGWortEditorAction {
         return $this->_plugin->getSupportedFileTypes($submissionFiles->getData('mimetype'));
     }
 
-    /**
-     * Filter authors.
-     *
-     * @param $contributor
-     */
-    function _filterAuthors($contributor) {
-        $userGroup = $contributor->getUserGroup();
-        return $userGroup->getData('nameLocaleKey') == 'default.groups.name.author';
-    }
+//    /**
+//     * Filter authors.
+//     *
+//     * @param $contributor
+//     */
+//    function _filterAuthors($contributor) {
+//        $userGroup = $contributor->getUserGroup();
+//        return $userGroup->getData('nameLocaleKey') == 'default.groups.name.author';
+//    }
 
     /**
      * Filter volume editor.
@@ -567,32 +567,6 @@ class VGWortEditorAction {
 
     function _filterENGalleys($galley) {
         return $galley->getLocale() == 'en_US';
-    }
-
-    function _checkService($vgWortUserId, $vgWortUserPassword, $vgWortAPI) {
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, $vgWortAPI);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-        $wsdlContent = curl_exec($curl);
-        $httpStatusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        if ($httpStatusCode != 200) {
-            throw new SoapFault('noWSDL', __('plugins.generic.vgWort.noWSDL', ['wsdl' => $vgWortAPI]));
-        }
-        curl_close($curl);
-
-        $curl = curl_init();
-        curl_setopt(
-            $curl,
-            CURLOPT_URL,
-            str_replace('://', '://' . $vgWortUserId . ':' . $vgWortUserPassword . '@', $vgWortAPI)
-        );
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-        $wsdlContent = curl_exec($curl);
-        $httpStatusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        if ($httpStatusCode != 200) {
-            throw new SoapFault('httpError', __('plugins.generic.vgWort.' . $httpStatusCode));
-        }
-        curl_close($curl);
     }
 
     function _removeNotification($pixelTag) {
