@@ -68,7 +68,7 @@ class VGWortPlugin extends GenericPlugin {
             HookRegistry::register('authorform::readuservars', [$this, 'metadataReadUserVars']);
             HookRegistry::register('chapterform::readuservars', [$this, 'metadataReadUserVars']);
 
-            // Execute form.
+            // Execute forms.
             HookRegistry::register('authorform::execute', [$this, 'metadataExecute']);
             HookRegistry::register('chapterform::execute', [$this, 'handleChapterFormExecute']);
             HookRegistry::register('chapterform::display', [$this, 'handleChapterFormDisplay']);
@@ -80,7 +80,7 @@ class VGWortPlugin extends GenericPlugin {
             HookRegistry::register('Templates::Common::Footer::PageFooter', [$this, 'insertPixelTagJSViewer']);
 
             // Assign pixel tag to submission object.
-            HookRegistry::register('Publication::edit', [$this, 'pixelExecuteSubmission']);
+            HookRegistry::register('Publication::edit', [$this, 'handleSubmissionFormExecute']);
 
             $this->pixelTagStatusLabels = [
                 0 => __('plugins.generic.vgWort.pixelTag.status.notassigned'),
@@ -447,6 +447,9 @@ class VGWortPlugin extends GenericPlugin {
 
     /**
      * Hook callback for extending "Edit Chapter" form.
+     *
+     * @param string $hookName
+     * @param array $args
      */
     public function handleChapterFormDisplay($hookName, $args)
     {
@@ -515,7 +518,8 @@ class VGWortPlugin extends GenericPlugin {
     }
 
     /**
-     * Hook callback for executing "Edit Chapter" form.
+     * Hook callback for assigning a pixel tag to a chapter 
+     * when executing "Edit Chapter" form.
      *
      * @param string $hookName
      * @param array $args
@@ -538,6 +542,7 @@ class VGWortPlugin extends GenericPlugin {
             $pixelTagAssigned = false;
         }
 
+        // TODO: Do we need this?
         try {
             $chapterDao = DAORegistry::getDAO('ChapterDAO');
         } catch (Exception $e) {
@@ -545,7 +550,8 @@ class VGWortPlugin extends GenericPlugin {
         }
 
         $chapter = $form->getChapter();
-        $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
+        error_log("[VGWort] chapter: " . var_export($chapter,true));
+        // $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
 
         if ($chapter) {
             $publicationId = $chapter->getData('publicationId');
@@ -585,16 +591,16 @@ class VGWortPlugin extends GenericPlugin {
         $ompVersion = Application::getApplication()->getCurrentVersion()->getVersionString();
 
         if (strstr($template, "submissionGalley.tpl")) {
-            $templateMgr->registerFilter('output', array($this, 'insertPixelTagSubmissionPage'));
+            $templateMgr->registerFilter('output', [$this, 'insertPixelTagSubmissionPage']);
             return false;
         }
 
         switch ($template) {
             case 'frontend/pages/book.tpl':
-                $templateMgr->registerFilter('output', array($this, 'insertPixelTagSubmissionPage'));
+                $templateMgr->registerFilter('output', [$this, 'insertPixelTagSubmissionPage']);
                 break;
             case 'frontend/pages/issue.tpl':
-                $templateMgr->registerFilter('output', array($this, 'insertPixelTagIssueTOC'));
+                $templateMgr->registerFilter('output', [$this, 'insertPixelTagIssueTOC']);
                 break;
             case 'workflow/workflow.tpl':
                 $this->import('classes.form.VGWortForm');
@@ -672,8 +678,8 @@ class VGWortPlugin extends GenericPlugin {
 
         switch ($template) {
             case 'controllers/tab/workflow/production.tpl':
-                $submission = $templateMgr->get_template_vars('submission');
-                $notificationOptions =& $templateMgr->get_template_vars('productionNotificationRequestOptions');
+                $submission = $templateMgr->getTemplateVars('submission');
+                $notificationOptions =& $templateMgr->getTemplateVars('productionNotificationRequestOptions');
                 $notificationOptions[NOTIFICATION_LEVEL_NORMAL][NOTIFICATION_TYPE_VGWORT_ERROR] = [
                     ASSOC_TYPE_SUBMISSION,
                     $submission->getId()
@@ -703,7 +709,8 @@ class VGWortPlugin extends GenericPlugin {
     }
 
     /**
-     * Hook callback for creating a new table that lists all pixel tags.
+     * Hook callback for creating a new table in the distribution settings 
+     * that lists all pixel tags.
      *
      * @param string $hookName
      * @param array $args
@@ -722,11 +729,11 @@ class VGWortPlugin extends GenericPlugin {
      *
      */
     function insertPixelTagSubmissionPage($output, $templateMgr) {
-        $press = $templateMgr->get_template_vars('currentContext');
-        $monograph = $templateMgr->get_template_vars('publishedSubmission'); // NICHT "monograph"
+        $press = $templateMgr->getTemplateVars('currentContext');
+        $monograph = $templateMgr->getTemplateVars('publishedSubmission'); // NICHT "monograph"
 
-        $publicationFormats = $templateMgr->get_template_vars('publicationFormats');
-        $availableFiles = $templateMgr->get_template_vars('availableFiles');
+        $publicationFormats = $templateMgr->getTemplateVars('publicationFormats');
+        $availableFiles = $templateMgr->getTemplateVars('availableFiles');
 
         $submissionDao = DAORegistry::getDAO('SubmissionDAO');
         $submission = $submissionDao->getById($monograph->getId());
@@ -784,19 +791,24 @@ class VGWortPlugin extends GenericPlugin {
         $templateMgr =& $args[1];
         $output =& $args[2];
 
-        $press = $templateMgr->get_template_vars('currentContext');
-        $monograph = $templateMgr->get_template_vars('publishedSubmission');
-
-        if (isset($press) && !empty($monograph)) {
-            if (isset($monograph) && !empty($monograph)) {
+        $press = $templateMgr->getTemplateVars('currentContext');
+        $submission = $templateMgr->getTemplateVars('publishedSubmission');
+        $chapter = $templateMgr->getTemplateVars('chapter');
+        
+        if (isset($press) && !empty($submission)) {
+            if (isset($submission) && !empty($submission)) {
                 $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
-                $pixelTag = $pixelTagDao->getPixelTagBySubmissionId($monograph->getId(), $press->getId());
-                if (isset($pixelTag) && !$pixelTag->getDateRemoved()) {
+                $pixelTag = $pixelTagDao->getPixelTagByChapterId($chapter->getId(), $submission->getId(), $press->getId());
+                // Take pixel tag from submission if chapter does not have its own pixel.
+                if (!isset($pixelTag)) {
+                    $pixelTag = $pixelTagDao->getPixelTagBySubmissionId($submission->getId(), $press->getId());
+                }
+                if (!$pixelTag->getDateRemoved()) {
                     $application = PKPApplication::getApplication();
                     $request = $application->getRequest();
                     $httpsProtocol = $request->getProtocol() == 'https';
                     $output = $this->buildPixelTagHTML($pixelTag, $httpsProtocol);
-                }
+                }    
             }
         }
 
@@ -878,12 +890,13 @@ class VGWortPlugin extends GenericPlugin {
     }
 
     /**
-     * Hook callback for assigning pixel tags when executing submission's form.
+     * Hook callback for assigning a pixel tag to a submission
+     * when executing submission's form.
      *
      * @param string hookName
      * @param array args
      */
-    function pixelExecuteSubmission($hookName, $args)
+    function handleSubmissionFormExecute($hookName, $args)
     {
         $publication =& $args[0];
         $publicationData = $args[2];
