@@ -798,12 +798,14 @@ class VGWortPlugin extends GenericPlugin {
         if (isset($press) && !empty($submission)) {
             if (isset($submission) && !empty($submission)) {
                 $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
-                $pixelTag = $pixelTagDao->getPixelTagByChapterId($chapter->getId(), $submission->getId(), $press->getId());
+                if (isset($chapter)) {
+                    $pixelTag = $pixelTagDao->getPixelTagByChapterId($chapter->getId(), $submission->getId(), $press->getId());
+                }
                 // Take pixel tag from submission if chapter does not have its own pixel.
                 if (!isset($pixelTag)) {
                     $pixelTag = $pixelTagDao->getPixelTagBySubmissionId($submission->getId(), $press->getId());
                 }
-                if (!$pixelTag->getDateRemoved()) {
+                if (isset($pixelTag) && !$pixelTag->getDateRemoved()) {
                     $application = PKPApplication::getApplication();
                     $request = $application->getRequest();
                     $httpsProtocol = $request->getProtocol() == 'https';
