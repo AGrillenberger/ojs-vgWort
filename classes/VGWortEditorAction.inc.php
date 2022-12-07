@@ -12,13 +12,18 @@
  * @brief VGWortEditorAction class.
  */
 
-define('PIXEL_SERVICE_WSDL', 'https://tom.vgwort.de/services/1.0/pixelService.wsdl');
-define('MESSAGE_SERVICE_WSDL', 'https://tom.vgwort.de/services/1.13/messageService.wsdl');
+use \GuzzleHttp\Exception\ClientException;
+use \GuzzleHttp\Exception\ServerException;
+use \GuzzleHttp\Exception\BadResponseException;
 
-/* to just test the plugin, please use the VG Wort test portal: */
-define('PIXEL_SERVICE_WSDL_TEST', 'https://tom-test.vgwort.de/services/1.0/pixelService.wsdl');
-define('MESSAGE_SERVICE_WSDL_TEST', 'https://tom-test.vgwort.de/services/1.13/messageService.wsdl');
+define('PIXEL_SERVICE', 'https://tom.vgwort.de/api/external/metis/rest/pixel/v1.0/order');
+define('CHECK_AUTHOR', 'https://tom.vgwort.de/api/external/metis/rest/message/v1.0/checkAuthorRequest');
+define('NEW_MESSAGE', 'https://tom.vgwort.de/api/external/metis/rest/message/v1.0/newMessageRequest');
 
+// to just test the plugin, please use the VG Wort test portal:
+define('PIXEL_SERVICE_TEST', 'https://tom-test.vgwort.de/api/external/metis/rest/pixel/v1.0/order');
+define('CHECK_AUTHOR_TEST', 'https://tom-test.vgwort.de/api/external/metis/rest/message/v1.0/checkAuthorRequest');
+define('NEW_MESSAGE_TEST', 'https://tom-test.vgwort.de/api/external/metis/rest/message/v1.0/newMessageRequest');
 
 class VGWortEditorAction {
 	/** @var $_plugin VGWortPlugin */
@@ -42,41 +47,83 @@ class VGWortEditorAction {
 		$vgWortUserId = $vgWortPlugin->getSetting($contextId, 'vgWortUserId');
 		$vgWortUserPassword = $vgWortPlugin->getSetting($contextId, 'vgWortUserPassword');
 		$vgWortTestAPI = $vgWortPlugin->getSetting($contextId, 'vgWortTestAPI');
-		$vgWortAPI = PIXEL_SERVICE_WSDL;
+		$vgWortAPI = PIXEL_SERVICE;
 
 		if ($vgWortTestAPI) {
-			$vgWortAPI = PIXEL_SERVICE_WSDL_TEST;
+			$vgWortAPI = PIXEL_SERVICE_TEST;
 		}
-		try {
-			// check if the system requirements are fulfilled
-			if (!$vgWortPlugin->requirementsFulfilled()) {
-				return array(false, __('plugins.generic.vgWort.requirementsRequired'));
-			}
 
-			// check web service: availability and credentials
-			$this->_checkService($vgWortUserId, $vgWortUserPassword, $vgWortAPI);
-			$client = new SoapClient($vgWortAPI, array(
-				'login' => $vgWortUserId,
-				'password' => $vgWortUserPassword,
-				'exceptions' => true,
-				'trace' => 1,
-				'features' => SOAP_SINGLE_ELEMENT_ARRAYS
-			));
-			$result = $client->orderPixel(array("count" => 1));
+	        $httpClient = Application::get()->getHttpClient();
+	        $data = ['count' => 1];
+	
+	        try {
+	            if (!$vgWortPlugin->requirementsFulfilled()) {
+	                return [false, __('plugins.generic.vgWort.requirementsRequired')];
+	            }
+	            $response = $httpClient->request(
+	                'POST',
+	                $vgWortAPI,
+	                [
+	                    'json' => $data,
+	                    'auth' => [$vgWortUserId, $vgWortUserPassword]
+	                ]
+	            );
+	            $response = json_decode($response->getBody(), false);
+	            return [true, $response];
+	        }
+	        catch (\GuzzleHttp\Exception\ClientException $e) {
+	            if ($e->hasResponse()) {
+	                $response = $e->getResponse();
+	                $responseBodyAsString = $response->getBody()->getContents();
+	                $statusCode = $response->getStatusCode();
+	                $reasonPhrase = $response->getReasonPhrase();
+	                return [false, __('plugins.generic.vgWort.order.errorCode') . $reasonPhrase];
+	            }
+	        }
+	        catch (\GuzzleHttp\Exception\ServerException $e) {
+	            if ($e->hasResponse()) {
+	                $response = $e->getResponse();
+	                $responseBodyAsString = $response->getBody()->getContents();
+	                $statusCode = $response->getStatusCode();
+	                $reasonPhrase = $response->getReasonPhrase();
+	                return [false, $reasonPhrase];
+	            }
+	        }
+	        catch (Exception $e) {
+	            error_log("[VG Wort] Exception: " . var_export($e->getResponse(),true));
+	        }
 
-			return array(true, $result);
-		}
-		catch (SoapFault $soapFault) {
-			if($soapFault->faultcode == 'noWSDL' || $soapFault->faultcode == 'httpError') {
-				return array(false, $soapFault->faultstring);
-			}
-			$detail = $soapFault->detail;
-			$function = $detail->orderPixelFault;
-			return array(
-				false,
-				__('plugins.generic.vgWort.order.errorCode' . $function->errorcode,
-				array('maxOrder' => $function->maxOrder)));
-		}
+
+		//try {
+		//	// check if the system requirements are fulfilled
+		//	if (!$vgWortPlugin->requirementsFulfilled()) {
+		//		return array(false, __('plugins.generic.vgWort.requirementsRequired'));
+		//	}
+
+		//	// check web service: availability and credentials
+		//	$this->_checkService($vgWortUserId, $vgWortUserPassword, $vgWortAPI);
+		//	$client = new SoapClient($vgWortAPI, array(
+		//		'login' => $vgWortUserId,
+		//		'password' => $vgWortUserPassword,
+		//		'exceptions' => true,
+		//		'trace' => 1,
+		//		'features' => SOAP_SINGLE_ELEMENT_ARRAYS
+		//	));
+		//	$result = $client->orderPixel(array("count" => 1));
+
+		//	return array(true, $result);
+		//}
+		//catch (SoapFault $soapFault) {
+		//	if($soapFault->faultcode == 'noWSDL' || $soapFault->faultcode == 'httpError') {
+		//		return array(false, $soapFault->faultstring);
+		//	}
+		//	$detail = $soapFault->detail;
+		//	$function = $detail->orderPixelFault;
+		//	return array(
+		//		false,
+		//		__('plugins.generic.vgWort.order.errorCode' . $function->errorcode,
+		//		array('maxOrder' => $function->maxOrder)));
+		//}
 	}
 
 	/**
@@ -150,7 +197,7 @@ class VGWortEditorAction {
 
 		// check if the requirements for the registration are fulfilled
 		$checkResult = $this->check($pixelTag, $request);
-        error_log("checkResult: ". var_export($checkResult,true));
+        //error_log("checkResult: ". var_export($checkResult,true));
 		$isError = !$checkResult[0];
 		$errorMsg = null;
 		if ($isError) {
@@ -215,46 +262,94 @@ class VGWortEditorAction {
 		$vgWortUserId = $vgWortPlugin->getSetting($contextId, 'vgWortUserId');
 		$vgWortUserPassword = $vgWortPlugin->getSetting($contextId, 'vgWortUserPassword');
 		$vgWortTestAPI = $vgWortPlugin->getSetting($contextId, 'vgWortTestAPI');
-		$vgWortAPI = MESSAGE_SERVICE_WSDL;
+		$vgWortAPI = CHECK_AUTHOR;
 		if ($vgWortTestAPI) {
-			$vgWortAPI = MESSAGE_SERVICE_WSDL_TEST;
+			$vgWortAPI = CHECK_AUTHOR_TEST;
 		}
-		try {
-			// check if the system requirements are fulfilled
-			if (!$vgWortPlugin->requirementsFulfilled()) {
-				return array(false, __('plugins.generic.vgWort.requirementsRequired'));
-			}
-			// check web service: availability and credentials
-			$this->_checkService($vgWortUserId, $vgWortUserPassword, $vgWortAPI);
-			$client = new SoapClient($vgWortAPI, array(
-				'login' => $vgWortUserId,
-				'password' => $vgWortUserPassword
-			));
-			$result = $client->checkAuthor(array("cardNumber" => $cardNo, "surName" => $lastName));
-			return array(
-				$result->valid,
-				__('plugins.generic.vgWort.check.notValid', array('surName' => $lastName))
-			);
-		}
-		catch (SoapFault $soapFault) {
-			if($soapFault->faultcode == 'noWSDL' || $soapFault->faultcode == 'httpError') {
-				return array(false, $soapFault->faultstring);
-			}
-			$detail = $soapFault->detail;
-			$function = $detail->checkAuthorFault;
-			if (isset($function)) {
-			     return array(false, __('plugins.generic.vgWort.check.errorCode' . $function->errorcode));
-			}
-			return array(
-				false,
-				__('plugins.generic.vgWort.check.errorCode'),
-				array(
-					'faultcode' => $soapFault->faultcode,
-					'faultstring' => $soapFault->faultstring
-				)
-			);
-		}
-	}
+	
+		$httpClient = Application::get()->getHttpClient();
+	        $data = [
+	            'cardNumber' => $cardNo,
+	            'surName' => $lastName
+	        ];
+	
+	        try {
+	            if (!$vgWortPlugin->requirementsFulfilled()) {
+	                return [false, __('plugins.generic.vgWort.requirementsRequired')];
+	            }
+	
+	            $response = $httpClient->request(
+	                'GET',
+	                $vgWortAPI,
+	                [
+	                    'json' => $data,
+	                    'auth' => [$vgWortUserId, $vgWortUserPassword]
+	                ]
+	            );
+	
+	            $response = json_decode(json_encode($response->getBody()), false);
+	
+	            return [true, $response];
+	        }
+	        catch (\GuzzleHttp\Exception\ClientException $e) {
+	            if ($e->hasResponse()) {
+	                $response = $e->getResponse();
+	                $responseBodyAsString = $response->getBody()->getContents();
+	                $statusCode = $response->getStatusCode();
+	                $reasonPhrase = $response->getReasonPhrase();
+	                return [false, __('plugins.generic.vgWort.order.errorCode') . $reasonPhrase];
+	            }
+	        }
+	        catch (\GuzzleHttp\Exception\ServerException $e) {
+	            if ($e->hasResponse()) {
+	                $response = $e->getResponse();
+	                $responseBodyAsString = $response->getBody()->getContents();
+	                $statusCode = $response->getStatusCode();
+	                $reasonPhrase = $response->getReasonPhrase();
+	                return [false, $reasonPhrase];
+	            }
+	        }
+	        catch (Exception $e) {
+	            error_log("[VGWortEditorAction] checkAuthor() Exception: " . var_export($e->getResponse(),true));
+	        }
+	    }
+
+		//try {
+		//	// check if the system requirements are fulfilled
+		//	if (!$vgWortPlugin->requirementsFulfilled()) {
+		//		return array(false, __('plugins.generic.vgWort.requirementsRequired'));
+		//	}
+		//	// check web service: availability and credentials
+		//	$this->_checkService($vgWortUserId, $vgWortUserPassword, $vgWortAPI);
+		//	$client = new SoapClient($vgWortAPI, array(
+		//		'login' => $vgWortUserId,
+		//		'password' => $vgWortUserPassword
+		//	));
+		//	$result = $client->checkAuthor(array("cardNumber" => $cardNo, "surName" => $lastName));
+		//	return array(
+		//		$result->valid,
+		//		__('plugins.generic.vgWort.check.notValid', array('surName' => $lastName))
+		//	);
+		//}
+		//catch (SoapFault $soapFault) {
+		//	if($soapFault->faultcode == 'noWSDL' || $soapFault->faultcode == 'httpError') {
+		//		return array(false, $soapFault->faultstring);
+		//	}
+		//	$detail = $soapFault->detail;
+		//	$function = $detail->checkAuthorFault;
+		//	if (isset($function)) {
+		//	     return array(false, __('plugins.generic.vgWort.check.errorCode' . $function->errorcode));
+		//	}
+		//	return array(
+		//		false,
+		//		__('plugins.generic.vgWort.check.errorCode'),
+		//		array(
+		//			'faultcode' => $soapFault->faultcode,
+		//			'faultstring' => $soapFault->faultstring
+		//		)
+		//	);
+		//}
+	//}
 
 	/**
 	 * Register a pixel tag with VG Wort, uses VG Wort service.
@@ -266,88 +361,93 @@ class VGWortEditorAction {
 	 */
 	function newMessage($pixelTag, $request, $contextId = null) {
 		$vgWortPlugin = $this->_plugin;
-		$ojsVersion = Application::getApplication()->getCurrentVersion()->getVersionString();
-
 		if (!isset($contextId)) {
 			$contextId = $vgWortPlugin->getCurrentContextId();//$context->getId();
 		}
-
+	        $vgWortUserId = $vgWortPlugin->getSetting($contextId, 'vgWortUserId');
+	        $vgWortUserPassword = $vgWortPlugin->getSetting($contextId, 'vgWortUserPassword');
+	        $vgWortTestAPI = $vgWortPlugin->getSetting($contextId, 'vgWortTestAPI');
+	        $vgWortAPI = NEW_MESSAGE;
+	        if ($vgWortTestAPI) {
+	            $vgWortAPI = NEW_MESSAGE_TEST;
+	        }
+		
 		$vgWortPlugin->import('classes.PixelTag');
-		$submission = $pixelTag->getSubmission();
-		// get all submission contributors
-		$contributors = $submission->getAuthors();
-		// get submission authors
-		$submissionAuthors = array_filter($contributors, array($this, '_filterAuthors'));
-		// get submission translators
-		$submissionTranslators = array_filter($contributors, array($this, '_filterTranslators'));
-		// there has to be either an author or a translator
-		assert (!empty($submissionAuthors) || !empty($submissionTranslators));
-
-		// get authors information: vg wort card number, first (max. 40 characters) and last name
-		$locale = $submission->getLocale();
-		if (!empty($submissionAuthors)) {
-			$authors = array('author' => array());
-			foreach ($submissionAuthors as $author) {
-				$cardNo = $author->getData('vgWortCardNo');
-				if (!empty($cardNo)) {
-				    // if (preg_match_all('#3.1.1#', $ojsVersion)  === 1) {
-                    //     $authors['author'][] = array('cardNumber' => $author->getData('vgWortCardNo'), 'firstName' => mb_substr($author->getFirstName(), 0, 39, 'utf8'), 'surName' => $author->getLastName());
-				    // } else {
-					$authors['author'][] = array('cardNumber' => $author->getData('vgWortCardNo'), 'firstName' => mb_substr($author->getGivenName($locale), 0, 39, 'utf8'), 'surName' => $author->getFamilyName($locale));
-				    // }
-				} else {
-				    // if (preg_match_all('#3.1.1#', $ojsVersion)  === 1) {
-				    //     $authors['author'][] = array('firstName' => mb_substr($author->getFirstName(), 0, 39, 'utf8'), 'surName' => $author->getLastName());
-                    // } else {
-					$authors['author'][] = array('firstName' => mb_substr($author->getGivenName($locale), 0, 39,'utf8'), 'surName' => $author->getFamilyName($locale));
-                    // }
-				}
-			}
-			$parties = array('authors' => $authors);
-		}
-		// get translators information: vg wort card number, first (max. 40 characters) and last name
-		if (!empty($submissionTranslators)) {
-			$translators = array('translator' => array());
-			foreach ($submissionTranslators as $translator) {
-				$cardNo = $translator->getData('vgWortCardNo');
-				if (!empty($cardNo)) {
-				    // if (preg_match_all('#3.1.1#', $ojsVersion)  === 1) {
-					//    $translators['translator'][] = array('cardNumber' => $translator->getData('vgWortCardNo'), 'firstName' => mb_substr($translator->getFirstName(), 0, 39,'utf8'), 'surName' => $translator->getLastName());
-				    // } else {
-					$translators['translator'][] = array('cardNumber' => $translator->getData('vgWortCardNo'), 'firstName' => mb_substr($translator->getGivenName($locale), 0, 39, 'utf8'), 'surName' => $translator->getFamilyName($locale));
-				    // }
-				} else {
-				    // if (preg_match_all('#3.1.1#', $ojsVersion)  === 1) {
-					//    $translators['translator'][] = array('firstName' => mb_substr($translator->getFirstName(), 0, 39, 'utf8'), 'surName' => $translator->getLastName());
-				    // } else {
-					$translators['translator'][] = array('firstName' => mb_substr($translator->getGivenName($locale), 0, 39, 'utf8'), 'surName' => $translator->getFamilyName($locale));
-				    // }
-				}
-			}
-			$parties['translators'] = $translators;
-		}
+	        $submission = $pixelTag->getSubmission();
+	
+	        $locale = $submission->getLocale();
+	
+	        // Get authors and translators
+	        $contributors = $submission->getAuthors();
+	        $authors = array_filter($contributors, [$this, '_filterAuthors']);
+	        $translators = array_filter($contributors, [$this, '_filterTranslators']);
+		//error_log("VGWORT: contributors: " . var_export($contributors,true));
+		//error_log("VGWORT: authors: " . var_export($authors,true));
+		//error_log("VGWORT: translators: " . var_export($translators,true));
+		
+		assert(!empty($authors) || !empty($translators));
+	        $participants = [];
+	        if (!empty($authors)) {
+	            foreach ($authors as $author) {
+	                $cardNo = $author->getData('vgWortCardNo');
+	                if (!empty($cardNo)) {
+	                    $participants[] = [
+	                        'cardNumber' => $author->getData('vgWortCardNo'),
+	                        'firstName' => mb_substr($author->getGivenName($locale), 0, 39, 'utf8'),
+	                        'involvement' => 'AUTHOR',
+	                        'surName' => $author->getFamilyName($locale)
+	                    ];
+	                } else {
+	                    $participants[] = [
+	                        'firstName' => mb_substr($author->getGivenName($locale), 0, 39, 'utf8'),
+	                        'involvement' => 'AUTHOR',
+	                        'surName' => $author->getFamilyName($locale)
+	                    ];
+	                };
+	            };
+	        }
+	        if (!empty($translators)) {
+	            foreach ($translators as $translator) {
+	                $cardNo = $author->getData('vgWortCardNo');
+	                if (!empty($cardNo)) {
+	                    $participants[] = [
+	                        'cardNumber' => $translator->getData('vgWortCardNo'),
+	                        'firstName' => mb_substr($translator->getGivenName($locale), 0, 39, 'utf8'),
+	                        'involvement' => 'TRANSLATOR',
+	                        'surName' => $translator->getFamilyName($locale)
+	                    ];
+	                } else {
+	                    $participants[] = [
+	                        'firstName' => mb_substr($translator->getGivenName($locale), 0, 39, 'utf8'),
+	                        'involvement' => 'TRANSLATOR',
+	                        'surName' => $translator->getFamilyName($locale)
+	                    ];
+	                };
+	            };
+	        }
 
 		// get supported galleys
 		$galleys = (array) $submission->getGalleys();
+		error_log("VGWORT: " . var_export($galleys,true));
 		$supportedGalleys = array_filter($galleys, array($vgWortPlugin, 'galleySupported'));
 		// construct the VG Wort webranges for the supported galleys
-		$webranges = array('webrange' => array());
+		$webranges = [];
 
-        $dispatcher = Application::get()->getDispatcher();
-        foreach ($supportedGalleys as $supportedGalley) {
+	        $dispatcher = Application::get()->getDispatcher();
+	        foreach ($supportedGalleys as $supportedGalley) {
 		    $url = $dispatcher->url(
-				$request,
-				ROUTE_PAGE,
-				null,
-				'article',
-				'view',
-				array(
-					$submission->getBestArticleId(),
-					$supportedGalley->getBestGalleyId()
-				)
-			);
-			$webrange = array('url' => array($url));
-			$webranges['webrange'][] = $webrange;
+			$request,
+			ROUTE_PAGE,
+			null,
+			'article',
+			'view',
+			array(
+				$submission->getBestArticleId(),
+				$supportedGalley->getBestGalleyId()
+			)
+		);
+			$webrange = array('urls' => array($url));
+			$webranges[] = $webrange;
 
 			$downlaodUrl1 = $dispatcher->url(
 				$request,
@@ -360,8 +460,8 @@ class VGWortEditorAction {
 					$supportedGalley->getBestGalleyId()
 				)
 			);
-			$webrange = array('url' => array($downlaodUrl1));
-			$webranges['webrange'][] = $webrange;
+			$webrange = array('urls' => array($downlaodUrl1));
+			$webranges[] = $webrange;
 
 			$downlaodUrl2 = $dispatcher->url(
 				$request,
@@ -375,9 +475,10 @@ class VGWortEditorAction {
 					$supportedGalley->getFileId()
 				)
 			);
-			$webrange = array('url' => array($downlaodUrl2));
-			$webranges['webrange'][] = $webrange;
+			$webrange = array('urls' => array($downlaodUrl2));
+			$webranges[] = $webrange;
 		}
+		//error_log("VGWORT: webranges: " . var_export($webranges,true));
 
 		// get the text/content:
 		// if there is no German text, then try English, else any
@@ -401,15 +502,15 @@ class VGWortEditorAction {
 		$content = $submissionFileManager->readFileFromPath($galleyFile->getFilePath());
 		$galleyFileType = $galleyFile->getFileType();
 		if ($galleyFileType == 'text/html' || $galleyFileType == 'text/xml') {
-			$text = array('plainText' => strip_tags($content));
+			$text = array('plainText' => base64_encode(strip_tags($content)));
 		} elseif ($galleyFileType == 'application/pdf') {
 		    // base64_encode of pdf causes soapClient/Business Exception -> vgWort Errorcode 8
-		    $text = array('pdf' => $content);
+		    $text = array('pdf' => base64_encode($content));
 		} elseif ($galleyFileType == 'application/epub+zip') {
 		    // base64_encode of epub causes soapClient/Business Exception -> vgWort Errorcode 20
 		    $text = array('epub' => $content);
 		}
-
+		//error_log("VGWORT: text: " . var_export($text,true));
 		// get the title (max. 100 characters):
 		// if there is no German title, then try English, else in the primary language
 		$submissionLocale = $submission->getLocale();
@@ -433,88 +534,144 @@ class VGWortEditorAction {
 		// create a VG Wort message
 		$message = array('lyric' => $isLyric, 'shorttext' => $shortText, 'text' => $text);
 
-		$vgWortUserId = $vgWortPlugin->getSetting($contextId, 'vgWortUserId');
-		$vgWortUserPassword = $vgWortPlugin->getSetting($contextId, 'vgWortUserPassword');
-		$vgWortTestAPI = $vgWortPlugin->getSetting($contextId, 'vgWortTestAPI');
-		$vgWortAPI = MESSAGE_SERVICE_WSDL;
-		if ($vgWortTestAPI) {
-			$vgWortAPI = MESSAGE_SERVICE_WSDL_TEST;
-		}
-		try {
-			// check if the system requirements are fulfilled
+	        //$httpClient = Application::get()->getHttpClient();
+	        $data = [
+	            'participants' => $participants,
+	            'privateidentificationid' => $pixelTag->getPrivateCode(),
+	            'messagetext' => $message,
+	            'webranges' => $webranges,
+	            "distributionRight" => true,
+	            "publicAccessRight" => true,
+	            "reproductionRight" => true,
+	            "rightsGrantedConfirmation" => true
+	        ];
+		
+		//try {
 			if (!$vgWortPlugin->requirementsFulfilled()) {
-				return array(false, __('plugins.generic.vgWort.requirementsRequired'));
+                		return [false, __('plugins.generic.vgWort.requirementsRequired')];
 			}
+			$response = $this->uploadJSON($vgWortAPI, $vgWortUserId, $vgWortUserPassword, $data);
+			//$response = json_decode($response, false);
+			//error_log("VGWORT: response: " . var_export($response,true));
+			return [true, $response];
+		//} catch () {
+		//
+		//}
 
-			// check web service: availability and credentials
-			$this->_checkService($vgWortUserId, $vgWortUserPassword, $vgWortAPI);
-			$client = new SoapClient($vgWortAPI, array(
-				'login' => $vgWortUserId,
-				'password' => $vgWortUserPassword
-			));
-			$result = $client->newMessage(array(
-				'parties' => $parties,
-				'privateidentificationid' => $pixelTag->getPrivateCode(),
-				'messagetext' => $message,
-				'webranges' => $webranges));
-			return array($result->status == 'OK', '');
-		}
-		catch (SoapFault $soapFault) {
+		//try {
+	        //    if (!$vgWortPlugin->requirementsFulfilled()) {
+	        //        return [false, __('plugins.generic.vgWort.requirementsRequired')];
+	        //    }
+	        //    $response = $httpClient->request(
+	        //        'POST',
+	        //        $vgWortAPI,
+	        //        [
+	        //            'json' => $data,
+	        //            'auth' => [$vgWortUserId, $vgWortUserPassword],
+	        //            // 'debug' => $debug
+	        //        ]
+	        //    );
+	        //    $response = json_decode($response->getBody(), false);
+	        //    return [true, $response];
+	        //}
+	        //catch (\GuzzleHttp\Exception\ClientException $e) {
+	        //    if ($e->hasResponse()) {
+	        //        $response = $e->getResponse();
+	        //        $responseBodyAsString = $response->getBody()->getContents();
+	        //        $statusCode = $response->getStatusCode();
+	        //        $reasonPhrase = $response->getReasonPhrase();
+	        //        return [false, __('plugins.generic.vgWort.order.errorCode') . $reasonPhrase];
+	        //    }
+	        //}
+	        //catch (\GuzzleHttp\Exception\ServerException $e) {
+	        //    if ($e->hasResponse()) {
+	        //        $response = $e->getResponse();
+	        //        $responseBodyAsString = $response->getBody()->getContents();
+	        //        $statusCode = $response->getStatusCode();
+	        //        $reasonPhrase = $response->getReasonPhrase();
+	        //        return [false, $reasonPhrase];
+	        //    }
+	        //}
+	        //catch (Exception $e) {
+	        //    // error_log("[VGWortEditorAction] newMessage Exception: " . var_export($e->getResponse(),true));
+	        //}
 
-			// TODO: Is this error log necessary??
-			// log error details
-			error_log($soapFault);
-
-			if($soapFault->faultcode == 'noWSDL' || $soapFault->faultcode == 'httpError') {
-				return array(false, $soapFault->faultstring);
-			}
-
-			switch ($soapFault->faultstring)
-			{
-			case "Validation error":
-				$errorDetails = (array) $soapFault->detail;
-				error_log(print_r($errorDetails, TRUE));
-				return array(
-					false,
-					__('plugins.generic.vgWort.register.validationError',
-					array(
-						'details' => is_array($errorDetails['ValidationError'])
-							? implode($errorDetails['ValidationError'])
-							: print_r($errorDetails['ValidationError'], TRUE)
-					))
-				);
-			case "Business Exception":
-			        $errorDetails = $soapFault->detail->newMessageFault;
-			        error_log(print_r($errorDetails, TRUE));
-			        return array(
-						false,
-						__('plugins.generic.vgWort.register.vgWortBusinessException', array(
-							'errorcode' => $errorDetails->errorcode,
-							'errormsg' => $errorDetails->errormsg
-						))
-					);
-				return array(
-					false,
-					__('plugins.generic.vgWort.register.errorCode', array(
-						'faultcode' => $soapFault->faultcode,
-						'faultstring' => $soapFault->faultstring
-					))
-				);
-			default:
-				if (isset($soapFault->detail)) {
-					// TODO: Is this error log necessary??
-					error_log(print_r($soapFault->detail, TRUE));
-				}
-				return array(
-					false,
-					__('plugins.generic.vgWort.register.errorCode', array(
-						'faultcode' => $soapFault->faultcode,
-						'faultstring' => $soapFault->faultstring
-					))
-				);
-			}
-		}
 	}
+//		try {
+//			// check if the system requirements are fulfilled
+//			if (!$vgWortPlugin->requirementsFulfilled()) {
+//				return array(false, __('plugins.generic.vgWort.requirementsRequired'));
+//			}
+//
+//			// check web service: availability and credentials
+//			$this->_checkService($vgWortUserId, $vgWortUserPassword, $vgWortAPI);
+//			$client = new SoapClient($vgWortAPI, array(
+//				'login' => $vgWortUserId,
+//				'password' => $vgWortUserPassword
+//			));
+//			$result = $client->newMessage(array(
+//				'parties' => $parties,
+//				'privateidentificationid' => $pixelTag->getPrivateCode(),
+//				'messagetext' => $message,
+//				'webranges' => $webranges));
+//			return array($result->status == 'OK', '');
+//		}
+//		catch (SoapFault $soapFault) {
+//
+//			// TODO: Is this error log necessary??
+//			// log error details
+//			error_log($soapFault);
+//
+//			if($soapFault->faultcode == 'noWSDL' || $soapFault->faultcode == 'httpError') {
+//				return array(false, $soapFault->faultstring);
+//			}
+//
+//			switch ($soapFault->faultstring)
+//			{
+//			case "Validation error":
+//				$errorDetails = (array) $soapFault->detail;
+//				error_log(print_r($errorDetails, TRUE));
+//				return array(
+//					false,
+//					__('plugins.generic.vgWort.register.validationError',
+//					array(
+//						'details' => is_array($errorDetails['ValidationError'])
+//							? implode($errorDetails['ValidationError'])
+//							: print_r($errorDetails['ValidationError'], TRUE)
+//					))
+//				);
+//			case "Business Exception":
+//			        $errorDetails = $soapFault->detail->newMessageFault;
+//			        error_log(print_r($errorDetails, TRUE));
+//			        return array(
+//						false,
+//						__('plugins.generic.vgWort.register.vgWortBusinessException', array(
+//							'errorcode' => $errorDetails->errorcode,
+//							'errormsg' => $errorDetails->errormsg
+//						))
+//					);
+//				return array(
+//					false,
+//					__('plugins.generic.vgWort.register.errorCode', array(
+//						'faultcode' => $soapFault->faultcode,
+//						'faultstring' => $soapFault->faultstring
+//					))
+//				);
+//			default:
+//				if (isset($soapFault->detail)) {
+//					// TODO: Is this error log necessary??
+//					error_log(print_r($soapFault->detail, TRUE));
+//				}
+//				return array(
+//					false,
+//					__('plugins.generic.vgWort.register.errorCode', array(
+//						'faultcode' => $soapFault->faultcode,
+//						'faultstring' => $soapFault->faultstring
+//					))
+//				);
+//			}
+		
+	
 
 	/**
 	 * Check if the contributor is an author.
@@ -641,6 +798,37 @@ class VGWortEditorAction {
 				);
 			}
 		}
+	}
+
+	function uploadJSON($url, $username, $password, $data) {
+	    $curl = curl_init();
+	
+	    curl_setopt($curl, CURLOPT_UPLOAD, true);
+	    curl_setopt($curl, CURLOPT_HTTPHEADER, ['Accept: application/json', 'Content-Type: application/json']);
+	    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+	    curl_setopt($curl, CURLOPT_URL, $url);
+	    curl_setopt($curl, CURLOPT_POST, 1);
+	    curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+	    curl_setopt($curl, CURLOPT_USERPWD, "$username:$password");
+	    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+	    curl_setopt($curl, CURLOPT_VERBOSE, true);
+
+	    $filesDir = realpath(Config::getVar('files', 'files_dir'));
+	    $err_fh = fopen(join(DIRECTORY_SEPARATOR, [$filesDir, 'curl_err.log']), 'a+');
+	    curl_setopt($curl, CURLOPT_STDERR, $err_fh);
+		$response = curl_exec($curl);
+
+	    $curlError = curl_error($curl);
+	    if ($curlError) {
+		$statusCode = $response['message']['errorcode'];
+		$reasonPhrase = $response['message']['errormsg'];
+	    }
+	    
+		if (!empty($errors)) return [false, __('plugins.generic.vgWort.order.errorCode') . $reasonPhrase];
+	    curl_close($curl);
+
+	    //error_log("VGWORT: " . var_export($response,true));
+	    return [true, json_encode($response)];
 	}
 
 }
