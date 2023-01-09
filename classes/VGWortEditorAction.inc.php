@@ -245,7 +245,7 @@ class VGWortEditorAction {
 				$notificationManager = new NotificationManager();
 				$notificationManager->createTrivialNotification(
 					$user->getId(), $notificationType, array('contents' => $notificationMsg)
-			);
+				);
 			}
 		}
 	}
@@ -500,6 +500,7 @@ class VGWortEditorAction {
 		$submissionFileManager = new SubmissionFileManager($contextId, $pixelTag->getSubmissionId());
 		$galleyFile = $galley->getFile();
 		$content = $submissionFileManager->readFileFromPath($galleyFile->getFilePath());
+
 		$galleyFileType = $galleyFile->getFileType();
 		if ($galleyFileType == 'text/html' || $galleyFileType == 'text/xml') {
 			$text = array('plainText' => base64_encode(strip_tags($content)));

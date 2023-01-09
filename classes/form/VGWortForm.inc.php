@@ -53,6 +53,7 @@ class VGWortForm extends FormComponent {
             $pixelTagStatus = $pixelTag->getStatus();
             $publication->setData('vgWort::pixeltag::status', $pixelTagStatus);
         }
+
         if ($pixelTagStatus == PT_STATUS_UNREGISTERED_ACTIVE || $pixelTagStatus == PT_STATUS_REGISTERED_ACTIVE) {
             $pixelTagAssigned = true;
             $pixelTagRemoved = false;
@@ -84,7 +85,7 @@ class VGWortForm extends FormComponent {
 		$this->addField(new \PKP\components\forms\FieldOptions('vgWort::pixeltag::assign', [
             'label' => __('plugins.generic.vgWort.pixelTag'),
             'description' => "Status: " . $this->pixelTagStatusLabels[$pixelTagStatus],
-            'value' => $pixelTagAssigned,
+            'value' => true,
             'type' => 'radio',
             'options' => [
                 [
