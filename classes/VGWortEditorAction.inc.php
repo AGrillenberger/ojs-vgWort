@@ -53,77 +53,38 @@ class VGWortEditorAction {
 			$vgWortAPI = PIXEL_SERVICE_TEST;
 		}
 
-	        $httpClient = Application::get()->getHttpClient();
-	        $data = ['count' => 1];
+	    $data = ['count' => 1];
 	
-	        try {
-	            if (!$vgWortPlugin->requirementsFulfilled()) {
-	                return [false, __('plugins.generic.vgWort.requirementsRequired')];
-	            }
-	            $response = $httpClient->request(
-	                'POST',
-	                $vgWortAPI,
-	                [
-	                    'json' => $data,
-	                    'auth' => [$vgWortUserId, $vgWortUserPassword]
-	                ]
-	            );
-	            $response = json_decode($response->getBody(), false);
-	            return [true, $response];
+	    try {
+	        if (!$vgWortPlugin->requirementsFulfilled()) {
+	            return [false, __('plugins.generic.vgWort.requirementsRequired')];
 	        }
-	        catch (\GuzzleHttp\Exception\ClientException $e) {
-	            if ($e->hasResponse()) {
-	                $response = $e->getResponse();
-	                $responseBodyAsString = $response->getBody()->getContents();
-	                $statusCode = $response->getStatusCode();
-	                $reasonPhrase = $response->getReasonPhrase();
-	                return [false, __('plugins.generic.vgWort.order.errorCode') . $reasonPhrase];
-	            }
+			$response = $this->uploadJSON(PIXEL_SERVICE_TEST, $vgWortUserId, $vgWortUserPassword, $data);
+			$response_body = $response[1];
+			$response_json = json_decode($response_body,true);
+			return [true, json_decode($response_json)];
+	    }
+	    catch (\GuzzleHttp\Exception\ClientException $e) {
+	        if ($e->hasResponse()) {
+	            $response = $e->getResponse();
+	            $responseBodyAsString = $response->getBody()->getContents();
+	            $statusCode = $response->getStatusCode();
+	            $reasonPhrase = $response->getReasonPhrase();
+	            return [false, __('plugins.generic.vgWort.order.errorCode') . $reasonPhrase];
 	        }
-	        catch (\GuzzleHttp\Exception\ServerException $e) {
-	            if ($e->hasResponse()) {
-	                $response = $e->getResponse();
-	                $responseBodyAsString = $response->getBody()->getContents();
-	                $statusCode = $response->getStatusCode();
-	                $reasonPhrase = $response->getReasonPhrase();
-	                return [false, $reasonPhrase];
-	            }
+	    }
+	    catch (\GuzzleHttp\Exception\ServerException $e) {
+	        if ($e->hasResponse()) {
+	            $response = $e->getResponse();
+	            $responseBodyAsString = $response->getBody()->getContents();
+	            $statusCode = $response->getStatusCode();
+	            $reasonPhrase = $response->getReasonPhrase();
+	            return [false, $reasonPhrase];
 	        }
-	        catch (Exception $e) {
-	            error_log("[VG Wort] Exception: " . var_export($e->getResponse(),true));
-	        }
-
-
-		//try {
-		//	// check if the system requirements are fulfilled
-		//	if (!$vgWortPlugin->requirementsFulfilled()) {
-		//		return array(false, __('plugins.generic.vgWort.requirementsRequired'));
-		//	}
-
-		//	// check web service: availability and credentials
-		//	$this->_checkService($vgWortUserId, $vgWortUserPassword, $vgWortAPI);
-		//	$client = new SoapClient($vgWortAPI, array(
-		//		'login' => $vgWortUserId,
-		//		'password' => $vgWortUserPassword,
-		//		'exceptions' => true,
-		//		'trace' => 1,
-		//		'features' => SOAP_SINGLE_ELEMENT_ARRAYS
-		//	));
-		//	$result = $client->orderPixel(array("count" => 1));
-
-		//	return array(true, $result);
-		//}
-		//catch (SoapFault $soapFault) {
-		//	if($soapFault->faultcode == 'noWSDL' || $soapFault->faultcode == 'httpError') {
-		//		return array(false, $soapFault->faultstring);
-		//	}
-		//	$detail = $soapFault->detail;
-		//	$function = $detail->orderPixelFault;
-		//	return array(
-		//		false,
-		//		__('plugins.generic.vgWort.order.errorCode' . $function->errorcode,
-		//		array('maxOrder' => $function->maxOrder)));
-		//}
+	    }
+	    catch (Exception $e) {
+	        error_log("[VG Wort] Exception: " . var_export($e->getResponse(),true));
+	    }
 	}
 
 	/**
@@ -132,20 +93,18 @@ class VGWortEditorAction {
 	 * @param $result stdClass object
 	 */
 	function insertOrderedPixel($contextId, $result) {
-		$pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
+        $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
 		$pixels = $result->pixels;
-		$pixel = $pixels->pixel;
-		foreach ($pixel as $currPixel){
-			$pixelTag = new PixelTag();
-			$pixelTag->setContextId($contextId);
-			$pixelTag->setDomain($result->domain);
-			$pixelTag->setDateOrdered(strtotime($result->orderDateTime));
-			$pixelTag->setStatus(PT_STATUS_AVAILABLE);
-			$pixelTag->setTextType(TYPE_TEXT);
-			$pixelTag->setPrivateCode($currPixel->privateIdentificationId);
-			$pixelTag->setPublicCode($currPixel->publicIdentificationId);
-			$pixelTagId = $pixelTagDao->insertObject($pixelTag);
-		}
+		$currPixel = $pixels[0];
+		$pixelTag = new PixelTag();
+		$pixelTag->setContextId($contextId);
+		$pixelTag->setDomain($result->domain);
+		$pixelTag->setDateOrdered(strtotime($result->orderDateTime));
+		$pixelTag->setStatus(PT_STATUS_AVAILABLE);
+		$pixelTag->setTextType(TYPE_TEXT);
+		$pixelTag->setPrivateCode($currPixel->privateIdentificationId);
+		$pixelTag->setPublicCode($currPixel->publicIdentificationId);
+		$pixelTagId = $pixelTagDao->insertObject($pixelTag);
 	}
 
 	/**
@@ -828,7 +787,7 @@ class VGWortEditorAction {
 		if (!empty($errors)) return [false, __('plugins.generic.vgWort.order.errorCode') . $reasonPhrase];
 	    curl_close($curl);
 
-	    //error_log("VGWORT: " . var_export($response,true));
+	    //error_log("VGWORT: " . var_export(json_encode($response),true));
 	    return [true, json_encode($response)];
 	}
 
