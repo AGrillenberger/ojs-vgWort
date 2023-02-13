@@ -7,8 +7,16 @@
  * Edit VG Wort card number for an user or author (in the user, profile and author form)
  *
  *}
-<!-- VG Wort -->
+
 {fbvFormSection title=$vgWortFieldTitle}
-	{fbvElement type="text" label="plugins.generic.vgWort.cardNo.description" id="vgWortCardNo" name="vgWortCardNo" value=$vgWortCardNo maxlength="40" inline=true size=$fbvStyles.size.MEDIUM}
+	{fbvElement
+        type="text"
+        label="plugins.generic.vgWort.cardNo.description"
+        id="vgWortCardNo"
+        name="vgWortCardNo"
+        value=$vgWortCardNo
+        maxlength="40"
+        inline=true
+        size=$fbvStyles.size.MEDIUM
+    }
 {/fbvFormSection}
-<!-- /VG Wort -->

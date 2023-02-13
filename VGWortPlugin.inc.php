@@ -45,6 +45,11 @@ class VGWortPlugin extends GenericPlugin {
                 HookRegistry::register('authorform::execute', array($this, 'metadataExecute'));
                 HookRegistry::register('authorform::Constructor', array($this, 'addCheck'));
 
+                HookRegistry::register('userdetailsform::initdata', array($this, 'metadataInitData'));
+                HookRegistry::register('userdetailsform::readuservars', array($this, 'metadataReadUserVars'));
+                HookRegistry::register('userdetailsform::execute', array($this, 'metadataExecute'));
+                HookRegistry::register('userdetailsform::Constructor', array($this, 'addCheck'));
+
                 // Consider the new field/setting vgWortCarNo in the user and author DAO
                 HookRegistry::register('userdao::getAdditionalFieldNames', array($this, 'addFieldName'));
                 HookRegistry::register('authordao::getAdditionalFieldNames', array($this, 'addFieldName'));
@@ -211,8 +216,14 @@ class VGWortPlugin extends GenericPlugin {
     function metadataFieldEdit($hookName, $params) {
         $smarty =& $params[1];
         $output =& $params[2];
-        if ($hookName == 'Common::UserDetails::AdditionalItems') {
+        
+        $userId = $smarty->smarty->tpl_vars['userId']->value;
+        $userDao = DAORegistry::getDAO('UserDAO');
+        $user = $userDao->getById($userId);
+
+        if ($hookName == 'Common::UserDetails::AdditionalItems') {    
             $smarty->assign('vgWortFieldTitle', 'plugins.generic.vgWort.cardNo');
+            $smarty->assign('vgWortCardNo', $user->getData('vgWortCardNo'));
         }
         $templateFile = method_exists($this, 'getTemplateResource')
             ? $this->getTemplateResource('vgWortCardNo.tpl')
@@ -248,8 +259,10 @@ class VGWortPlugin extends GenericPlugin {
      */
     function metadataReadUserVars($hookName, $params) {
         $form =& $params[0];
-        $vars =& $params[1];
-        $vars[] = 'vgWortCardNo';
+        
+        $request = Application::getRequest();
+        $form->setData('vgWortCardNo', $request->getUserVar('vgWortCardNo'));
+        
         return false;
     }
 
@@ -269,6 +282,10 @@ class VGWortPlugin extends GenericPlugin {
         if ($user) {
             $user->setData('vgWortCardNo', $form->getData('vgWortCardNo'));
         }
+
+        $userDao = DAORegistry::getDAO('UserDAO');
+        $userDao->update($user);
+
         return false;
     }
 
