@@ -217,11 +217,12 @@ class VGWortPlugin extends GenericPlugin {
         $smarty =& $params[1];
         $output =& $params[2];
         
-        $userId = $smarty->smarty->tpl_vars['userId']->value;
-        $userDao = DAORegistry::getDAO('UserDAO');
-        $user = $userDao->getById($userId);
-
         if ($hookName == 'Common::UserDetails::AdditionalItems') {    
+            $userId = $smarty->smarty->tpl_vars['userId']->value;
+            $userDao = DAORegistry::getDAO('UserDAO');
+            $user = $userDao->getById($userId);
+        }
+        if ($user) {
             $smarty->assign('vgWortFieldTitle', 'plugins.generic.vgWort.cardNo');
             $smarty->assign('vgWortCardNo', $user->getData('vgWortCardNo'));
         }
