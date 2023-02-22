@@ -53,6 +53,7 @@ class VGWortEditorAction {
                 ]
             );
             $response = json_decode($response->getBody(), false);
+            error_log("VGWORT: response: " . var_export($response,true));
             return [true, $response];
         }
         catch (\GuzzleHttp\Exception\ClientException $e) {
@@ -458,7 +459,9 @@ class VGWortEditorAction {
                     // 'debug' => $debug
                 ]
             );
-            $response = json_decode($response->getBody(), false);
+            error_log("VGWORT: response orderPixel: " . var_export($response,true));
+            $response = json_decode($response, false);
+            //$response = json_decode($response->getBody(), false);
             return [true, $response];
         }
         catch (\GuzzleHttp\Exception\ClientException $e) {

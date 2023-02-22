@@ -250,9 +250,9 @@ class PixelTagGridHandler extends GridHandler {
         $pixelTagId = $request->getUserVar('pixelTagId');
         $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
         $pixelTag = $pixelTagDao->getById($pixelTagId);
-        error_log("[PixelTagGridHandler] pixelTagId " . var_export($pixelTagId,true));
-        error_log("[PixelTagGridHandler] pixelTagDao " . var_export($pixelTagDao,true));
-        error_log("[PixelTagGridHandler] pixelTag " . var_export($pixelTag,true));
+        //error_log("[PixelTagGridHandler] pixelTagId " . var_export($pixelTagId,true));
+        //error_log("[PixelTagGridHandler] pixelTagDao " . var_export($pixelTagDao,true));
+        //error_log("[PixelTagGridHandler] pixelTag " . var_export($pixelTag,true));
         $statusMessage = !empty($pixelTag->getMessage())
             ? $pixelTag->getMessage()
             : __('plugins.generic.vgWort.pixelTag.noStatusMessage');

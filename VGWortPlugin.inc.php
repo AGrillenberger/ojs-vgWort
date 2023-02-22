@@ -550,8 +550,8 @@ class VGWortPlugin extends GenericPlugin {
         }
 
         $chapter = $form->getChapter();
-        error_log("[VGWort] chapter: " . var_export($chapter,true));
-        // $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
+        //error_log("[VGWort] chapter: " . var_export($chapter,true));
+        //$pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
 
         if ($chapter) {
             $publicationId = $chapter->getData('publicationId');
@@ -755,7 +755,7 @@ class VGWortPlugin extends GenericPlugin {
                     $output = str_replace($search, $replace, $output);
                     foreach ($publicationFormats as $publicationFormat) {
                         $submissionFile = $this->getSubmissionFiles($submission, $publicationFormat)->_current;
-                        // error_log("[VGWortPlugin] submissionFile: " . var_export(get_class($submissionFile),true));
+                        //error_log("[VGWortPlugin] submissionFile: " . var_export(get_class($submissionFile),true));
                         // change galley download links
                         $publicationFormatUrl = $request->url(
                             null,
