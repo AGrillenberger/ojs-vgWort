@@ -1,17 +1,32 @@
 <?php
 
-define('PT_STATUS_ANY', '');
-define('PT_STATUS_AVAILABLE', 0x01);
-define('PT_STATUS_UNREGISTERED_ACTIVE', 0x02);
-define('PT_STATUS_REGISTERED_ACTIVE', 0x03);
-define('PT_STATUS_UNREGISTERED_REMOVED', 0x04);
-define('PT_STATUS_REGISTERED_REMOVED', 0x05);
-define('PT_STATUS_FAILED', 0x06); // only used for filtering, not saved in DB column status
+namespace APP\plugins\generic\vgwort\classes;
 
-define('TYPE_TEXT', 0x01);
-define('TYPE_LYRIC', 0x02);
+use \PKP\core\DataObject;
+
+// define('PT_STATUS_ANY', '');
+// define('PT_STATUS_AVAILABLE', 0x01);
+// define('PT_STATUS_UNREGISTERED_ACTIVE', 0x02);
+// define('PT_STATUS_REGISTERED_ACTIVE', 0x03);
+// define('PT_STATUS_UNREGISTERED_REMOVED', 0x04);
+// define('PT_STATUS_REGISTERED_REMOVED', 0x05);
+// define('PT_STATUS_FAILED', 0x06); // only used for filtering, not saved in DB column status
+
+// define('TYPE_TEXT', 0x01);
+// define('TYPE_LYRIC', 0x02);
 
 class PixelTag extends DataObject {
+
+    public const STATUS_ANY = '';
+    public const STATUS_AVAILABLE = 0x01;
+    public const STATUS_UNREGISTERED_ACTIVE = 0x02;
+    public const STATUS_REGISTERED_ACTIVE = 0x03;
+    public const STATUS_UNREGISTERED_REMOVED = 0x04;
+    public const STATUS_REGISTERED_REMOVED = 0x05;
+    public const STATUS_FAILED = 0x06; // only used for filtering, not saved in DB column status
+
+    public const TYPE_TEXT = 0x01;
+    public const TYPE_LYRIC = 0x02;
 
     function getContextId() {
         return $this->getData('contextId');

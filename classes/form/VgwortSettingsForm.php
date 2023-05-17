@@ -1,17 +1,32 @@
 <?php
 
 /**
- * @file VGWortSettingsForm.inc.php
+ * @file VgwortSettingsForm.inc.php
  *
  * Copyright (c) 2022 Heidelberg University
  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
- * @class VGWortSettingsForm
+ * @class VgwortSettingsForm
  */
 
-import('lib.pkp.classes.form.Form');
+namespace APP\plugins\generic\vgwort\classes\form;
 
-class VGWortSettingsForm extends Form {
+// use PKP\classes\form\Form;
+// import('lib.pkp.classes.form.Form');
+
+use APP\core\Application;
+use APP\facades\Repo;
+use APP\notification\NotificationManager;
+use APP\template\TemplateManager;
+use PKP\form\Form;
+use PKP\form\validation\FormValidator;
+use PKP\form\validation\FormValidatorCSRF;
+use PKP\form\validation\FormValidatorPost;
+use PKP\notification\PKPNotification;
+use PKP\security\Role;
+
+
+class VgwortSettingsForm extends Form {
 
     var $contextId;
 

@@ -12,12 +12,14 @@
  * @brief Describe database table structures.
  */
 
+namespace APP\plugins\generic\vgwort;
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Builder;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-class VGWortMigration extends Migration {
+class VgwortMigration extends Migration {
     /**
      * Run the migrations.
      * @return void

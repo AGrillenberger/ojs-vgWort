@@ -10,13 +10,24 @@
  * @class VGWortPlugin
  */
 
-import('lib.pkp.classes.plugins.GenericPlugin');
-import('lib.pkp.classes.submission.SubmissionFile');
-import('lib.pkp.classes.components.forms.FieldOptions');
+namespace APP\plugins\generic\vgwort;
+
+use PKP\plugins\GenericPlugin;
+use PKP\plugins\Hook;
+use PKP\plugins\PluginRegistry;
+use PKP\plugins\SubmissionFile;
+use PKP\plugins\FieldOptions;
+use PKP\db\DAORegistry;
+use PKP\linkAction\LinkAction;
+use PKP\linkAction\request\AjaxModal;
+use PKP\core\JSONMessage;
+
+use APP\core\Application;
+
 
 define('NOTIFICATION_TYPE_VGWORT_ERROR', 0x400000A);
 
-class VGWortPlugin extends GenericPlugin {
+class VgwortPlugin extends GenericPlugin {
 
     const DATA_FIELDS = [
         'vgWort::texttype',
@@ -33,61 +44,61 @@ class VGWortPlugin extends GenericPlugin {
         // Register the plugin even when it is not enabled.
         $success = parent::register($category, $path);
         if ($success && $this->getEnabled()) {
-            $this->import('classes.form.VGWortForm');
-            $this->import('classes.PixelTag');
-            $this->import('classes.PixelTagDAO');
-            $pixelTagDao = new PixelTagDAO($this->getName());
+            // $this->import('classes.form.VGWortForm');
+            // $this->import('classes.PixelTag');
+            // $this->import('classes.PixelTagDAO');
+            $pixelTagDao = new classes\PixelTagDAO($this->getName());
             $returner = DAORegistry::registerDAO('PixelTagDAO', $pixelTagDao);
 
             // Extend Schemas and DAOs for some new properties.
-            HookRegistry::register('Schema::get::publication', [$this, 'addToSchema']);
-            HookRegistry::register('Schema::get::author', [$this, 'addToSchema']);
-            HookRegistry::register('Schema::get::user', [$this, 'addToSchema']);
-            HookRegistry::register('chapterdao::getAdditionalFieldNames', [$this, 'addAdditionalFieldNames']);
-            HookRegistry::register('chapterdao::getLocaleFieldNames', [$this, 'addAdditionalFieldNames']);
+            Hook::add('Schema::get::publication', [$this, 'addToSchema']);
+            Hook::add('Schema::get::author', [$this, 'addToSchema']);
+            Hook::add('Schema::get::user', [$this, 'addToSchema']);
+            Hook::add('chapterdao::getAdditionalFieldNames', [$this, 'addAdditionalFieldNames']);
+            Hook::add('chapterdao::getLocaleFieldNames', [$this, 'addAdditionalFieldNames']);
 
             // Add new tabs to the distribution settings and publication workflow form.
-            HookRegistry::register('Template::Settings::distribution', [$this, 'addNewTabs']);
-            HookRegistry::register('Template::Workflow::Publication', [$this, 'addNewTabs']);
+            Hook::add('Template::Settings::distribution', [$this, 'addNewTabs']);
+            Hook::add('Template::Workflow::Publication', [$this, 'addNewTabs']);
 
             //
-            HookRegistry::register('TemplateManager::display', [$this, 'handleTemplateDisplay']);
-            HookRegistry::register('TemplateManager::fetch', [$this, 'handleTemplateFetch']);
+            Hook::add('TemplateManager::display', [$this, 'handleTemplateDisplay']);
+            Hook::add('TemplateManager::fetch', [$this, 'handleTemplateFetch']);
 
             // Create new table that lists ordered pixel tags.
-            HookRegistry::register('LoadComponentHandler', [$this, 'setupGridHandler']);
+            Hook::add('LoadComponentHandler', [$this, 'setupGridHandler']);
 
             // Add new field for VG Wort Card Number to the user's and author's form template.
-            HookRegistry::register('Common::UserDetails::AdditionalItems', [$this, 'metadataFieldEdit']);
-            HookRegistry::register('User::PublicProfile::AdditionalItems', [$this, 'metadataFieldEdit']);
+            Hook::add('Common::UserDetails::AdditionalItems', [$this, 'metadataFieldEdit']);
+            Hook::add('User::PublicProfile::AdditionalItems', [$this, 'metadataFieldEdit']);
 
             // Initialize data.
-            HookRegistry::register('authorform::initdata', [$this, 'metadataInitData']);
+            Hook::add('authorform::initdata', [$this, 'metadataInitData']);
 
             // Read user's input.
-            HookRegistry::register('authorform::readuservars', [$this, 'metadataReadUserVars']);
-            HookRegistry::register('chapterform::readuservars', [$this, 'metadataReadUserVars']);
+            Hook::add('authorform::readuservars', [$this, 'metadataReadUserVars']);
+            Hook::add('chapterform::readuservars', [$this, 'metadataReadUserVars']);
 
             // Execute forms.
-            HookRegistry::register('authorform::execute', [$this, 'metadataExecute']);
-            HookRegistry::register('chapterform::execute', [$this, 'handleChapterFormExecute']);
-            HookRegistry::register('chapterform::display', [$this, 'handleChapterFormDisplay']);
+            Hook::add('authorform::execute', [$this, 'metadataExecute']);
+            Hook::add('chapterform::execute', [$this, 'handleChapterFormExecute']);
+            Hook::add('chapterform::display', [$this, 'handleChapterFormDisplay']);
 
             // Add validation check for VG Wort Card No. field.
-            HookRegistry::register('authorform::Constructor', [$this, 'addCheck']);
+            Hook::add('authorform::Constructor', [$this, 'addCheck']);
 
             // Add VG Wort pixel to PDF JS Viewer.
-            HookRegistry::register('Templates::Common::Footer::PageFooter', [$this, 'insertPixelTagJSViewer']);
+            Hook::add('Templates::Common::Footer::PageFooter', [$this, 'insertPixelTagJSViewer']);
 
             // Assign pixel tag to submission object.
-            HookRegistry::register('Publication::edit', [$this, 'handleSubmissionFormExecute']);
+            Hook::add('Publication::edit', [$this, 'handleSubmissionFormExecute']);
 
             $this->pixelTagStatusLabels = [
                 0 => __('plugins.generic.vgWort.pixelTag.status.notassigned'),
-                PT_STATUS_REGISTERED_ACTIVE => __('plugins.generic.vgWort.pixelTag.status.registered.active'),
-                PT_STATUS_UNREGISTERED_ACTIVE => __('plugins.generic.vgWort.pixelTag.status.unregistered.active'),
-                PT_STATUS_REGISTERED_REMOVED => __('plugins.generic.vgWort.pixelTag.status.registered.removed'),
-                PT_STATUS_UNREGISTERED_REMOVED => __('plugins.generic.vgWort.pixelTag.status.unregistered.removed')
+                classes\PixelTag::STATUS_REGISTERED_ACTIVE => __('plugins.generic.vgWort.pixelTag.status.registered.active'),
+                classes\PixelTag::STATUS_UNREGISTERED_ACTIVE => __('plugins.generic.vgWort.pixelTag.status.unregistered.active'),
+                classes\PixelTag::STATUS_REGISTERED_REMOVED => __('plugins.generic.vgWort.pixelTag.status.registered.removed'),
+                classes\PixelTag::STATUS_UNREGISTERED_REMOVED => __('plugins.generic.vgWort.pixelTag.status.unregistered.removed')
             ];
 
         }
@@ -156,8 +167,7 @@ class VGWortPlugin extends GenericPlugin {
      */
     function getInstallMigration()
     {
-        $this->import('VGWortMigration');
-        return new VGWortMigration();
+        return new VgwortMigration();
     }
 
     /**
@@ -228,9 +238,9 @@ class VGWortPlugin extends GenericPlugin {
             // Return a JSON response containing the settings form
             case 'settings':
                 // Load the custom form
-                $this->import('classes.form.VGWortSettingsForm');
+                // $this->import('classes.form.VGWortSettingsForm');
                 $contextId = $request->getContext()->getId();
-                $settingsForm = new VGWortSettingsForm($this, $contextId);
+                $settingsForm = new classes\form\VgwortSettingsForm($this, $contextId);
 
                 // Fetch the form the first time it loads, before
                 // the user has tried to save it

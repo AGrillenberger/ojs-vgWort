@@ -10,9 +10,11 @@
  */
 
 
-import('lib.pkp.classes.form.Form');
+namespace APP\plugins\generic\vgwort;
 
-class VGWortChapterForm extends Form {
+use PKP\classes\form\Form;
+
+class VgwortChapterForm extends Form {
 
 	//
 	// Private properties
@@ -141,8 +143,8 @@ class VGWortChapterForm extends Form {
 			'archiveAccess',
 			'automaticDeposit',
 			'automaticDepositCheckBox',
-			'ojsInstance')
-		];
+			'ojsInstance'
+		]);
 	}
 
 	/**

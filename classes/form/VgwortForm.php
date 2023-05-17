@@ -1,10 +1,12 @@
 <?php
 
+namespace APP\plugins\generic\vgwort;
+
 use \PKP\components\forms\FormComponent;
 
 define('FORM_VGWORT', 'vgwortform');
 
-class VGWortForm extends FormComponent {
+class VgwortForm extends FormComponent {
 
     public $id = FORM_VGWORT;
 

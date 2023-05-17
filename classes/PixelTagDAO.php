@@ -1,6 +1,9 @@
 <?php
 
-import('lib.pkp.classes.db.DAO');
+namespace APP\plugins\generic\vgwort\classes;
+
+use PKP\db\DAO;
+// import('lib.pkp.classes.db.DAO');
 
 define('PT_FIELD_PRIVCODE', 'private_code');
 define('PT_FIELD_PUBCODE', 'public_code');
