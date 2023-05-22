@@ -22,6 +22,8 @@ use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
 use PKP\core\JSONMessage;
 
+use APP\facades\Repo;
+
 use APP\core\Application;
 
 
@@ -565,12 +567,14 @@ class VgwortPlugin extends GenericPlugin {
 
         if ($chapter) {
             $publicationId = $chapter->getData('publicationId');
-            $publicationDao = DAORegistry::getDAO('PublicationDAO');
-            $publication = $publicationDao->getById($publicationId);
-
+            // $publicationDao = DAORegistry::getDAO('PublicationDAO');
+            // $publication = $publicationDao->getById($publicationId);
+            $publication = Repo::publication()->get($publicationId);
             $submissionId = $publication->getData('submissionId');
-            $submissionDao = DAORegistry::getDAO('SubmissionDAO');
-            $submission = $submissionDao->getById($submissionId);
+            $submission = Repo::submission()->get($submissionId);
+
+            // $submissionDao = DAORegistry::getDAO('SubmissionDAO');
+            // $submission = $submissionDao->getById($submissionId);
 
             $contextId = $submission->getData('contextId');
 
@@ -745,8 +749,10 @@ class VgwortPlugin extends GenericPlugin {
         $publicationFormats = $templateMgr->getTemplateVars('publicationFormats');
         $availableFiles = $templateMgr->getTemplateVars('availableFiles');
 
-        $submissionDao = DAORegistry::getDAO('SubmissionDAO');
-        $submission = $submissionDao->getById($monograph->getId());
+        $submissionId = $monograph->getId();
+        $submission = Repo::submission()->get($submissionId);
+        // $submissionDao = DAORegistry::getDAO('SubmissionDAO');
+        // $submission = $submissionDao->getById($monograph->getId());
         $contextId = $submission->getData('contextId');
 
         if (isset($submission)) {
@@ -920,8 +926,11 @@ class VgwortPlugin extends GenericPlugin {
         }
         $submissionId = $publication->getData('submissionId');
         $submissionFileDao =& DAORegistry::getDAO('SubmissionFileDAO');
-        $submissionDao = DAORegistry::getDAO('SubmissionDAO');
-        $submission = $submissionDao->getById($submissionId);
+
+        $submission = Repo::submission()->get($submissionId);
+
+        // $submissionDao = DAORegistry::getDAO('SubmissionDAO');
+        // $submission = $submissionDao->getById($submissionId);
         $contextId = $submission->getData('contextId');
         $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
         $pixelTag = $pixelTagDao->getPixelTagBySubmissionId($submissionId, $contextId);
