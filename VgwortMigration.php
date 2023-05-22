@@ -17,7 +17,7 @@ namespace APP\plugins\generic\vgwort;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Builder;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Capsule\Manager as Capsule;
+use Illuminate\Support\Facades\Schema;
 
 class VgwortMigration extends Migration {
     /**
@@ -25,7 +25,7 @@ class VgwortMigration extends Migration {
      * @return void
      */
     public function up() {
-        Capsule::schema()->create('pixel_tags', function (Blueprint $table) {
+        Schema::create('pixel_tags', function (Blueprint $table) {
             $table->bigInteger('pixel_tag_id')->autoIncrement();
             $table->bigInteger('context_id');
             $table->bigInteger('submission_id')->nullable();
