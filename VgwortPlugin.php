@@ -569,19 +569,12 @@ class VgwortPlugin extends GenericPlugin {
         }
 
         $chapter = $form->getChapter();
-        //error_log("[VGWort] chapter: " . var_export($chapter,true));
-        //$pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
 
         if ($chapter) {
             $publicationId = $chapter->getData('publicationId');
-            // $publicationDao = DAORegistry::getDAO('PublicationDAO');
-            // $publication = $publicationDao->getById($publicationId);
             $publication = Repo::publication()->get($publicationId);
             $submissionId = $publication->getData('submissionId');
             $submission = Repo::submission()->get($submissionId);
-
-            // $submissionDao = DAORegistry::getDAO('SubmissionDAO');
-            // $submission = $submissionDao->getById($submissionId);
 
             $contextId = $submission->getData('contextId');
 
@@ -606,7 +599,8 @@ class VgwortPlugin extends GenericPlugin {
      * @param string $hookName
      * @param array $args
      */
-    function handleTemplateDisplay($hookName, $args) {
+    function handleTemplateDisplay($hookName, $args)
+    {
         $templateMgr =& $args[0];
         $template =& $args[1];
         $ompVersion = Application::getApplication()->getCurrentVersion()->getVersionString();
@@ -624,7 +618,6 @@ class VgwortPlugin extends GenericPlugin {
                 $templateMgr->registerFilter('output', [$this, 'insertPixelTagIssueTOC']);
                 break;
             case 'workflow/workflow.tpl':
-                // $this->import('classes.form.VGWortForm');
                 $context = $templateMgr->getTemplateVars('currentContext');
                 $submission = $templateMgr->getTemplateVars('submission');
 

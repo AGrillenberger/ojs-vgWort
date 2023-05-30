@@ -2,26 +2,13 @@
 
 namespace APP\plugins\generic\vgwort\classes;
 
-use \PKP\core\DataObject;
-use PKP\db\DAORegistry;
-
 use APP\facades\Repo;
 
+use PKP\core\DataObject;
+use PKP\db\DAORegistry;
 
-
-// define('PT_STATUS_ANY', '');
-// define('PT_STATUS_AVAILABLE', 0x01);
-// define('PT_STATUS_UNREGISTERED_ACTIVE', 0x02);
-// define('PT_STATUS_REGISTERED_ACTIVE', 0x03);
-// define('PT_STATUS_UNREGISTERED_REMOVED', 0x04);
-// define('PT_STATUS_REGISTERED_REMOVED', 0x05);
-// define('PT_STATUS_FAILED', 0x06); // only used for filtering, not saved in DB column status
-
-// define('TYPE_TEXT', 0x01);
-// define('TYPE_LYRIC', 0x02);
-
-class PixelTag extends DataObject {
-
+class PixelTag extends DataObject
+{
     public const STATUS_ANY = '';
     public const STATUS_AVAILABLE = 0x01;
     public const STATUS_UNREGISTERED_ACTIVE = 0x02;
@@ -33,104 +20,128 @@ class PixelTag extends DataObject {
     public const TYPE_TEXT = 0x01;
     public const TYPE_LYRIC = 0x02;
 
-    function getContextId() {
+    function getContextId()
+    {
         return $this->getData('contextId');
     }
 
-    function setContextId($contextId) {
+    function setContextId($contextId)
+    {
         return $this->setData('contextId', $contextId);
     }
 
-    function getSubmissionId() {
+    function getSubmissionId()
+    {
         return $this->getData('submissionId');
     }
 
-    function setSubmissionId($submissionId) {
+    function setSubmissionId($submissionId)
+    {
         return $this->setData('submissionId', $submissionId);
     }
 
-    function &getSubmission() {
+    function &getSubmission()
+    {
         // $submissionDao = DAORegistry::getDAO('SubmissionDAO');
         // $submission = $submissionDao->getById($this->getSubmissionId());
         $submission = Repo::submission()->get($this->getSubmissionId());
         return $submission;
     }
 
-    function getChapterId() {
+    function getChapterId()
+    {
         return $this->getData('chapterId');
     }
 
-    function setChapterId($chapterId) {
+    function setChapterId($chapterId)
+    {
         return $this->setData('chapterId', $chapterId);
     }
 
-    function &getChapter() {
+    function &getChapter()
+    {
         $chapterDao = DAORegistry::getDAO('ChapterDAO');
         $chapter = $chapterDao->getChapter($this->getChapterId());
         return $chapter;
     }
 
-    function getPrivateCode() {
+    function getPrivateCode()
+    {
         return $this->getData('privateCode');
     }
 
-    function setPrivateCode($privateCode) {
+    function setPrivateCode($privateCode)
+    {
         return $this->setData('privateCode', $privateCode);
     }
 
-    function getPublicCode() {
+    function getPublicCode()
+    {
         return $this->getData('publicCode');
     }
 
-    function setPublicCode($publicCode) {
+    function setPublicCode($publicCode)
+    {
         return $this->setData('publicCode', $publicCode);
     }
 
-    function getDomain() {
+    function getDomain()
+    {
         return $this->getData('domain');
     }
 
-    function setDomain($domain) {
+    function setDomain($domain)
+    {
         return $this->setData('domain', $domain);
     }
 
-    function getDateOrdered() {
+    function getDateOrdered()
+    {
         return $this->getData('dateOrdered');
     }
 
-    function setDateOrdered($dateOrdered) {
+    function setDateOrdered($dateOrdered)
+    {
         return $this->setData('dateOrdered', $dateOrdered);
     }
 
-    function getDateAssigned() {
+    function getDateAssigned()
+    {
         return $this->getData('dateAssigned');
     }
 
-    function setDateAssigned($dateAssigned) {
+    function setDateAssigned($dateAssigned)
+    {
         return $this->setData('dateAssigned', $dateAssigned);
     }
 
-    function getDateRegistered() {
+    function getDateRegistered()
+    {
         return $this->getData('dateRegistered');
     }
 
-    function setDateRegistered($dateRegistered) {
+    function setDateRegistered($dateRegistered)
+    {
         return $this->setData('dateRegistered', $dateRegistered);
     }
 
-    function getDateRemoved() {
+    function getDateRemoved()
+    {
         return $this->getData('dateRemoved');
     }
 
-    function setDateRemoved($dateRemoved) {
+    function setDateRemoved($dateRemoved)
+    {
         return $this->setData('dateRemoved', $dateRemoved);
     }
 
-    function getStatus() {
+    function getStatus()
+    {
         return $this->getData('status');
     }
 
-    function setStatus($status) {
+    function setStatus($status)
+    {
         return $this->setData('status', $status);
     }
 
@@ -157,15 +168,18 @@ class PixelTag extends DataObject {
         }
     }
 
-    function getTextType() {
+    function getTextType()
+    {
         return $this->getData('textType');
     }
 
-    function setTextType($textType) {
+    function setTextType($textType)
+    {
         return $this->setData('textType', $textType);
     }
 
-    function getTextTypeOptions() {
+    function getTextTypeOptions()
+    {
         static $textTypeOptions = [
             TYPE_TEXT => 'plugins.generic.vgwort.pixelTag.textType.text',
             TYPE_LYRIC => 'plugins.generic.vgwort.pixelTag.textType.lyric'
@@ -173,28 +187,23 @@ class PixelTag extends DataObject {
         return $textTypeOptions;
     }
 
-    function getMessage() {
+    function getMessage()
+    {
         return $this->getData('message');
     }
 
-    function setMessage($message) {
+    function setMessage($message)
+    {
         return $this->setData('message', $message);
     }
 
-    function isPublished() {
+    function isPublished()
+    {
         $submission = $this->getSubmission();
 
         if ($submission->getData('status') == STATUS_PUBLISHED) {
             return true;
         }
-        // if ($submission) {
-            // error_log("PixelTag: isPublished(): " . var_export($submission,true));
-            // $issueDao = DAORegistry::getDAO('IssueDAO');
-            // $issue = $issueDao->getBySubmissionId($submission->getId());
-            // if (isset($issue) && !empty($issue)) {
-            //     if ($issue->getPublished()) return true;
-            // }
-        // }
     }
 }
 

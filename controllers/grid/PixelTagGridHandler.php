@@ -21,9 +21,10 @@ use PKP\controllers\grid\feature\PagingFeature;
 use PKP\security\Role;
 use PKP\security\authorization\ContextAccessPolicy;
 
-class PixelTagGridHandler extends GridHandler {
-
-    function __construct() {
+class PixelTagGridHandler extends GridHandler
+{
+    function __construct()
+    {
         parent::__construct();
 
         $this->addRoleAssignment(
@@ -34,14 +35,16 @@ class PixelTagGridHandler extends GridHandler {
         );
     }
 
-    function authorize($request, &$args, $roleAssignments) {
+    function authorize($request, &$args, $roleAssignments)
+    {
         // import('lib.pkp.classes.security.authorization.ContextAccessPolicy');
         $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
 
         return parent::authorize($request, $args, $roleAssignments);
     }
 
-    function initialize($request, $args = NULL) {
+    function initialize($request, $args = NULL)
+    {
         parent::initialize($request, $args);
 
         $router = $request->getRouter();
@@ -149,23 +152,27 @@ class PixelTagGridHandler extends GridHandler {
         );
     }
 
-    function getRowInstance() {
+    function getRowInstance()
+    {
         return new PixelTagGridRow();
     }
 
-    function initFeatures($request, $args) {
+    function initFeatures($request, $args)
+    {
         // import('lib.pkp.classes.controllers.grid.feature.PagingFeature');
         return [new PagingFeature()];
     }
 
-    function getFilterColumns() {
+    function getFilterColumns()
+    {
         return [
             PT_FIELD_PRIVCODE => __('plugins.generic.vgwort.pixelTag.privateCode'),
             PT_FIELD_PUBCODE => __('plugins.generic.vgwort.pixelTag.publicCode')
         ];
     }
 
-    function renderFilter($request, $filterData = []) {
+    function renderFilter($request, $filterData = [])
+    {
         $context = $request->getContext();
         $statusNames = [
             PixelTag::STATUS_ANY => __('plugins.generic.vgwort.pixelTag.status.any'),
@@ -188,7 +195,8 @@ class PixelTagGridHandler extends GridHandler {
         return parent::renderFilter($request, $allFilterData);
     }
 
-    function getFilterSelectionData($request) {
+    function getFilterSelectionData($request)
+    {
         $search = (string) $request->getUserVar('search');
         $column = (string) $request->getUserVar('column');
         $statusId = (string) $request->getUserVar('statusId');
@@ -199,7 +207,8 @@ class PixelTagGridHandler extends GridHandler {
         ];
     }
 
-    function getFilterForm() {
+    function getFilterForm()
+    {
         $vgWortPlugin = PluginRegistry::getPlugin('generic', VGWORT_PLUGIN_NAME);
         $template = method_exists($vgWortPlugin, 'getTemplateResource')
             ? $vgWortPlugin->getTemplateResource('/controllers/grid/pixelTagGridFilter.tpl')
@@ -207,7 +216,8 @@ class PixelTagGridHandler extends GridHandler {
         return $template;
     }
 
-    protected function getFilterValues($filter) {
+    protected function getFilterValues($filter)
+    {
         if (isset($filter['search']) && $filter['search']) {
             $search = $filter['search'];
         } else {
@@ -226,7 +236,8 @@ class PixelTagGridHandler extends GridHandler {
         return [$search, $column, $statusId];
     }
 
-    function loadData($request, $filter) {
+    function loadData($request, $filter)
+    {
         $sortBy = 'pixel_tag_id';
         $sortDirection = SORT_DIRECTION_DESC;
         $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
@@ -247,7 +258,8 @@ class PixelTagGridHandler extends GridHandler {
         return $pixelTags->toAssociativeArray();
     }
 
-    function pixelTagsTab($args, $request) {
+    function pixelTagsTab($args, $request)
+    {
         $vgWortPlugin = PluginRegistry::getPlugin('generic', VGWORT_PLUGIN_NAME);
         $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
 
@@ -262,7 +274,8 @@ class PixelTagGridHandler extends GridHandler {
         return $templateMgr->fetchJson($templateMgr);
     }
 
-    function statusMessage($args, $request) {
+    function statusMessage($args, $request)
+    {
         $vgWortPlugin = PluginRegistry::getPlugin('generic', VGWORT_PLUGIN_NAME);
         $pixelTagId = $request->getUserVar('pixelTagId');
         $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
@@ -280,7 +293,8 @@ class PixelTagGridHandler extends GridHandler {
         return $templateMgr->fetchJson($vgWortPlugin->getTemplateResource('statusMessage.tpl'));
     }
 
-    function registerPixelTag($args = [], $request) {
+    function registerPixelTag($args = [], $request)
+    {
         $pixelTagId = $request->getUserVar('rowId');
         if (!$pixelTagId) $pixelTagId = $request->getUserVar('pixelTagId');
 

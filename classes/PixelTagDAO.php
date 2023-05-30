@@ -2,12 +2,12 @@
 
 namespace APP\plugins\generic\vgwort\classes;
 
+use APP\plugins\generic\vgwort\classes\PixelTag;
+
 use PKP\db\DAO;
 use PKP\db\DAOResultFactory;
 use PKP\plugins\PluginRegistry;
 use PKP\plugins\Hook;
-// import('lib.pkp.classes.db.DAO');
-use APP\plugins\generic\vgwort\classes\PixelTag;
 
 define('PT_FIELD_PRIVCODE', 'private_code');
 define('PT_FIELD_PUBCODE', 'public_code');
@@ -16,19 +16,21 @@ class PixelTagDAO extends DAO {
 
     var $parentPluginName;
 
-    function __construct($parentPluginName) {
+    function __construct($parentPluginName)
+    {
         parent::__construct();
         $this->parentPluginName = $parentPluginName;
     }
 
-    function newDataObject() {
+    function newDataObject()
+    {
         $vgWortPlugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
-        // $vgWortPlugin->import('classes.PixelTag');
 
         return new PixelTag();
     }
 
-    function getById($pixelTagId, $contextId = NULL) {
+    function getById($pixelTagId, $contextId = NULL)
+    {
         $params = array((int) $pixelTagId);
 
         if ($contextId) {
@@ -44,7 +46,8 @@ class PixelTagDAO extends DAO {
         return $row ? $this->_fromRow((array) $row) : NULL;
     }
 
-    function _fromRow($row) {
+    function _fromRow($row)
+    {
         $pixelTag = $this->newDataObject();
         $pixelTag->setId($row['pixel_tag_id']);
         $pixelTag->setContextId($row['context_id']);
@@ -66,7 +69,8 @@ class PixelTagDAO extends DAO {
         return $pixelTag;
     }
 
-    function insertObject($pixelTag) {
+    function insertObject($pixelTag)
+    {
         $returner = $this->update(
             sprintf('
                 INSERT INTO pixel_tags
@@ -90,7 +94,7 @@ class PixelTagDAO extends DAO {
                 $this->datetimeToDB($pixelTag->getDateRegistered()),
                 $this->datetimeToDB($pixelTag->getDateRemoved()),
                 ),
-            array(
+            [
                 $pixelTag->getContextId(),
                 $pixelTag->getSubmissionId(),
                 $pixelTag->getChapterId(),
@@ -100,13 +104,14 @@ class PixelTagDAO extends DAO {
                 $pixelTag->getStatus(),
                 $pixelTag->getTextType(),
                 $pixelTag->getMessage()
-            )
+            ]
         );
         $pixelTag->setId($this->getInsertPixelTagId());
         return $pixelTag->getId();
     }
 
-    function updateObject($pixelTag) {
+    function updateObject($pixelTag)
+    {
         return $this->update(
             sprintf('UPDATE pixel_tags
                 SET
@@ -129,7 +134,7 @@ class PixelTagDAO extends DAO {
                 $this->datetimeToDB($pixelTag->getDateRegistered()),
                 $this->datetimeToDB($pixelTag->getDateRemoved())
                 ),
-            array(
+            [
                 $pixelTag->getContextId(),
                 $pixelTag->getSubmissionId(),
                 $pixelTag->getChapterId(),
@@ -140,19 +145,22 @@ class PixelTagDAO extends DAO {
                 $pixelTag->getTextType(),
                 $pixelTag->getMessage(),
                 $pixelTag->getId()
-            )
+            ]
         );
     }
 
-    function deleteObject($pixelTag) {
+    function deleteObject($pixelTag)
+    {
         $this->deletePixelTagById($pixelTag->getId());
     }
 
-    function deletePixelTagById($pixelTagId) {
+    function deletePixelTagById($pixelTagId)
+    {
         $this->update('DELETE FROM pixel_tags WHERE pixel_tag_id = ?', (int) $pixelTagId);
     }
 
-    function deletePixelTagsByContextId($contextId) {
+    function deletePixelTagsByContextId($contextId)
+    {
         $pixelTags = $this->getPixelTagsByContextId($contextId);
         while ($pixelTag = $pixelTags->next()) {
             $this->deletePixelTagById($pixelTag->getId());
@@ -160,7 +168,8 @@ class PixelTagDAO extends DAO {
     }
 
     function getPixelTagsByContextId($contextId, $searchType = NULL, $search = NULL, $status = NULL,
-        $rangeInfo = NULL, $sortBy = NULL, $sortDirection = SORT_DIRECTION_ASC) {
+        $rangeInfo = NULL, $sortBy = NULL, $sortDirection = SORT_DIRECTION_ASC)
+    {
         $sql = 'SELECT DISTINCT * FROM pixel_tags ';
         $paramArray = [];
 
@@ -192,7 +201,8 @@ class PixelTagDAO extends DAO {
         return $returner;
     }
 
-    function getPixelTagBySubmissionId($submissionId, $contextId = NULL) {
+    function getPixelTagBySubmissionId($submissionId, $contextId = NULL)
+    {
         $params = array((int) $submissionId);
         if ($contextId) $params[] = (int) $contextId;
         $result = $this->retrieve(
@@ -203,7 +213,8 @@ class PixelTagDAO extends DAO {
         return $row ? $this->_fromRow((array) $row) : NULL;
     }
 
-    function getPixelTagByChapterId($chapterId, $submissionId, $contextId = NULL) {
+    function getPixelTagByChapterId($chapterId, $submissionId, $contextId = NULL)
+    {
         $params = array((int) $chapterId, (int) $submissionId);
         if ($contextId) $params[] = (int) $contextId;
         $result = $this->retrieve(
@@ -214,7 +225,8 @@ class PixelTagDAO extends DAO {
         return $row ? $this->_fromRow((array) $row) : NULL;
     }
 
-    function getAllForRegistration($contextId, $publicationDate = NULL) {
+    function getAllForRegistration($contextId, $publicationDate = NULL)
+    {
         // TODO: import('classes.publication.Publication');
         $params = array((int) $contextId, PixelTag::STATUS_UNREGISTERED_ACTIVE, STATUS_DECLINED);
         $result = $this->retrieve(
@@ -233,7 +245,8 @@ class PixelTagDAO extends DAO {
         return $returner;
     }
 
-    function getAvailablePixelTag($contextId) {
+    function getAvailablePixelTag($contextId)
+    {
         $result = $this->retrieve(
             'SELECT * FROM pixel_tags
             WHERE context_id = ? AND submission_id IS NULL AND date_assigned IS NULL AND status = ?
@@ -250,7 +263,8 @@ class PixelTagDAO extends DAO {
         // return $returner;
     }
 
-    function failedUnregisteredActiveExists($contextId) {
+    function failedUnregisteredActiveExists($contextId)
+    {
         $result = $this->retrieve(
             'SELECT COUNT(*) FROM pixel_tags WHERE message <> \'\' AND message IS NOT NULL AND  context_id = ?',
             array((int) $contextId)
@@ -258,7 +272,8 @@ class PixelTagDAO extends DAO {
         return $result->fields[0] ? true : false;
     }
 
-    function getInsertPixelTagId() {
+    function getInsertPixelTagId()
+    {
         return $this->_getInsertId('pixel_tags', 'pixel_tag_id');
     }
 }

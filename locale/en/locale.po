@@ -113,3 +113,13 @@ msgstr "Register"
 
 msgid "plugins.generic.vgwort.pixelTags.register.confirm"
 msgstr "Are you sure you want to register this pixel tag?"
+
+
+msgid "plugins.generic.vgwort.cardNo"
+msgstr "VG Wort Card Number"
+
+msgid "plugins.generic.vgwort.cardNo.description"
+msgstr "(Your VG Wort card number)"
+
+msgid "plugins.generic.vgwort.cardNoValid"
+msgstr "Please enter a valid card number (2-7 numbers)."

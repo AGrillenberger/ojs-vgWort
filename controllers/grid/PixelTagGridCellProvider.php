@@ -14,9 +14,10 @@ use APP\core\Services;
 
 // import('lib.pkp.classes.controllers.grid.GridCellProvider');
 
-class PixelTagGridCellProvider extends GridCellProvider {
-
-    function getCellActions($request, $row, $column, $position = GridHandler::GRID_ACTION_POSITION_DEFAULT) {
+class PixelTagGridCellProvider extends GridCellProvider
+{
+    function getCellActions($request, $row, $column, $position = GridHandler::GRID_ACTION_POSITION_DEFAULT)
+    {
         $pixelTag = $row->getData();
         $columnId = $column->getId();
         assert(is_a($pixelTag, 'PixelTag') && !empty($columnId));
@@ -90,7 +91,8 @@ class PixelTagGridCellProvider extends GridCellProvider {
         return parent::getCellActions($request, $row, $column, $position);
     }
 
-    function getTemplateVarsFromRowColumn($row, $column) {
+    function getTemplateVarsFromRowColumn($row, $column)
+    {
         $pixelTag = $row->getData();
         $columnId = $column->getId();
         assert(is_a($pixelTag, 'PixelTag') && !empty($columnId));
