@@ -1,5 +1,13 @@
 <?php
 
+namespace APP\plugins\generic\vgwort\classes;
+
+use APP\core\Application;
+use APP\notification\NotificationManager;
+use APP\plugins\generic\vgwort\classes\PixelTag;
+
+use PKP\db\DAORegistry;
+
 use \GuzzleHttp\Exception\ClientException;
 use \GuzzleHttp\Exception\ServerException;
 use \GuzzleHttp\Exception\BadResponseException;
@@ -95,8 +103,8 @@ class VGWortEditorAction {
             $pixelTag->setContextId($contextId);
             $pixelTag->setDomain($result->domain);
             $pixelTag->setDateOrdered(strtotime($result->orderDateTime));
-            $pixelTag->setStatus(PT_STATUS_AVAILABLE);
-            $pixelTag->setTextType(TYPE_TEXT);
+            $pixelTag->setStatus(PixelTag::STATUS_AVAILABLE);
+            $pixelTag->setTextType(PixelTag::TYPE_TEXT);
             $pixelTag->setPrivateCode($currPixel->privateIdentificationId);
             $pixelTag->setPublicCode($currPixel->publicIdentificationId);
             $pixelTagId = $pixelTagDao->insertObject($pixelTag);
@@ -160,7 +168,7 @@ class VGWortEditorAction {
             if (!$isError) {
                 $pixelTag->setDateRegistered(Core::getCurrentDate());
                 $pixelTag->setMessage(NULL);
-                $pixelTag->setStatus(PT_STATUS_REGISTERED_ACTIVE);
+                $pixelTag->setStatus(PixelTag::STATUS_REGISTERED_ACTIVE);
                 $pixelTagDao->updateObject($pixelTag);
                 $this->_removeNotification($pixelTag);
                 $notificationType = NOTIFICATION_TYPE_SUCCESS;
@@ -178,7 +186,7 @@ class VGWortEditorAction {
         if (!defined('SESSION_DISABLE_INIT')) {
             $user = $request->getUser();
             if ($user) {
-                import('classes.notification.NotificationManager');
+                // import('classes.notification.NotificationManager');
                 $notificationManager = new NotificationManager();
                 $notificationManager->createTrivialNotification(
                     $user->getId(), $notificationType, ['contents' => $notificationMsg]
@@ -273,7 +281,7 @@ class VGWortEditorAction {
             $vgWortAPI = NEW_MESSAGE_TEST;
         }
 
-        $vgWortPlugin->import('classes.PixelTag'); // TODO: Brauchen wir das?
+        //$vgWortPlugin->import('classes.PixelTag'); // TODO: Brauchen wir das?
         $submission = $pixelTag->getSubmission();
 
         $locale = $submission->getLocale();
@@ -427,7 +435,7 @@ class VGWortEditorAction {
         }
         $shorttext = mb_substr($title, 0, 99, 'utf8');
 
-        $isLyric = ($pixelTag->getTextType() == TYPE_LYRIC);
+        $isLyric = ($pixelTag->getTextType() == PixelTag::TYPE_LYRIC);
 
         $message = [
             'shorttext' => $shorttext,
@@ -446,10 +454,11 @@ class VGWortEditorAction {
             "reproductionRight" => true,
             "rightsGrantedConfirmation" => true
         ];
+        error_log("VGWortEditorAction l.457");
         try {
-            if (!$vgWortPlugin->requirementsFulfilled()) {
-                return [false, __('plugins.generic.vgWort.requirementsRequired')];
-            }
+            // if (!$vgWortPlugin->requirementsFulfilled()) {
+            //     return [false, __('plugins.generic.vgWort.requirementsRequired')];
+            // }
             $response = $httpClient->request(
                 'POST',
                 $vgWortAPI,
@@ -459,7 +468,7 @@ class VGWortEditorAction {
                     // 'debug' => $debug
                 ]
             );
-            error_log("VGWORT: response orderPixel: " . var_export($response,true));
+            error_log("VgwortEditorAction (l.471) response: " . var_export($response,true));
             $response = json_decode($response, false);
             //$response = json_decode($response->getBody(), false);
             return [true, $response];
@@ -483,7 +492,7 @@ class VGWortEditorAction {
             }
         }
         catch (Exception $e) {
-            // error_log("[VGWortEditorAction] newMessage Exception: " . var_export($e->getResponse(),true));
+            error_log("[VGWortEditorAction] newMessage Exception: " . var_export($e->getResponse(),true));
         }
     }
 

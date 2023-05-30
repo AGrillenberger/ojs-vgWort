@@ -1,8 +1,28 @@
 <?php
 
-import('lib.pkp.classes.controllers.grid.GridHandler');
-import('plugins.generic.vgWort.controllers.grid.PixelTagGridRow');
-import('lib.pkp.classes.linkAction.request.AjaxModal');
+// import('lib.pkp.classes.controllers.grid.GridHandler');
+// import('plugins.generic.vgWort.controllers.grid.PixelTagGridRow');
+// import('lib.pkp.classes.linkAction.request.AjaxModal');
+
+namespace APP\plugins\generic\vgwort\controllers\grid;
+
+use APP\plugins\generic\vgwort\VgwortPlugin;
+use APP\plugins\generic\vgwort\controllers\grid\PixelTagGridCellProvider;
+use APP\plugins\generic\vgwort\controllers\grid\PixelTagGridRow;
+use APP\plugins\generic\vgwort\classes\VGWortEditorAction;
+
+use PKP\plugins\PluginRegistry;
+use PKP\linkAction\LinkAction;
+use PKP\form\Form;
+use PKP\db\DAORegistry;
+use PKP\db\DAO;
+use PKP\linkAction\request\AjaxModal;
+use PKP\core\JSONMessage;
+use PKP\controllers\grid\GridColumn;
+use PKP\controllers\grid\GridHandler;
+use PKP\controllers\grid\feature\PagingFeature;
+use PKP\security\Role;
+use PKP\security\authorization\ContextAccessPolicy;
 
 class PixelTagGridHandler extends GridHandler {
 
@@ -18,7 +38,7 @@ class PixelTagGridHandler extends GridHandler {
     }
 
     function authorize($request, &$args, $roleAssignments) {
-        import('lib.pkp.classes.security.authorization.ContextAccessPolicy');
+        // import('lib.pkp.classes.security.authorization.ContextAccessPolicy');
         $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
 
         return parent::authorize($request, $args, $roleAssignments);
@@ -26,13 +46,14 @@ class PixelTagGridHandler extends GridHandler {
 
     function initialize($request, $args = NULL) {
         parent::initialize($request, $args);
+        error_log("PixelTagGridCellHandler");
 
         $router = $request->getRouter();
         $context = $request->getContext();
 
         AppLocale::requireComponents(LOCALE_COMPONENT_APP_SUBMISSION, LOCALE_COMPONENT_PKP_COMMON);
 
-        import('plugins.generic.vgWort.controllers.grid.PixelTagGridCellProvider');
+        // import('plugins.generic.vgWort.controllers.grid.PixelTagGridCellProvider');
         $pixelTagGridCellProvider = new PixelTagGridCellProvider();
 
         $this->setTitle('plugins.generic.vgWort.distribution.pixelTags.tab');
@@ -137,7 +158,7 @@ class PixelTagGridHandler extends GridHandler {
     }
 
     function initFeatures($request, $args) {
-        import('lib.pkp.classes.controllers.grid.feature.PagingFeature');
+        // import('lib.pkp.classes.controllers.grid.feature.PagingFeature');
         return [new PagingFeature()];
     }
 
@@ -151,13 +172,13 @@ class PixelTagGridHandler extends GridHandler {
     function renderFilter($request, $filterData = []) {
         $context = $request->getContext();
         $statusNames = [
-            PT_STATUS_ANY => __('plugins.generic.vgWort.pixelTag.status.any'),
-            PT_STATUS_AVAILABLE => __('plugins.generic.vgWort.pixelTag.status.available'),
-            PT_STATUS_UNREGISTERED_ACTIVE => __('plugins.generic.vgWort.pixelTag.status.unregistered.active'),
-            PT_STATUS_UNREGISTERED_REMOVED => __('plugins.generic.vgWort.pixelTag.status.unregistered.removed'),
-            PT_STATUS_REGISTERED_ACTIVE => __('plugins.generic.vgWort.pixelTag.status.registered.active'),
-            PT_STATUS_REGISTERED_REMOVED => __('plugins.generic.vgWort.pixelTag.status.registered.removed'),
-            PT_STATUS_FAILED => __('plugins.generic.vgWort.pixelTag.status.failed')
+            STATUS_ANY => __('plugins.generic.vgWort.pixelTag.status.any'),
+            STATUS_AVAILABLE => __('plugins.generic.vgWort.pixelTag.status.available'),
+            STATUS_UNREGISTERED_ACTIVE => __('plugins.generic.vgWort.pixelTag.status.unregistered.active'),
+            STATUS_UNREGISTERED_REMOVED => __('plugins.generic.vgWort.pixelTag.status.unregistered.removed'),
+            STATUS_REGISTERED_ACTIVE => __('plugins.generic.vgWort.pixelTag.status.registered.active'),
+            STATUS_REGISTERED_REMOVED => __('plugins.generic.vgWort.pixelTag.status.registered.removed'),
+            STATUS_FAILED => __('plugins.generic.vgWort.pixelTag.status.failed')
         ];
         $filterColumns = $this->getFilterColumns();
         $allFilterData = array_merge(
@@ -273,9 +294,9 @@ class PixelTagGridHandler extends GridHandler {
         $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
         $pixelTag = $pixelTagDao->getById($pixelTagId, $contextId);
 
-        if ($pixelTag && $pixelTag->getStatus() == PT_STATUS_UNREGISTERED_ACTIVE && !$pixelTag->getDateRemoved()) {
+        if ($pixelTag && $pixelTag->getStatus() == STATUS_UNREGISTERED_ACTIVE && !$pixelTag->getDateRemoved()) {
             $vgWortPlugin = PluginRegistry::getPlugin('generic', VGWORT_PLUGIN_NAME);
-            import('plugins.generic.vgWort.classes.VGWortEditorAction');
+            //import('plugins.generic.vgWort.classes.VGWortEditorAction');
             $vgWortEditorAction = new VGWortEditorAction($vgWortPlugin);
             $vgWortEditorAction->registerPixelTag($pixelTag, $request);
         }

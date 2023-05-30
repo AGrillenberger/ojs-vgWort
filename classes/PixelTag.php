@@ -131,20 +131,20 @@ class PixelTag extends DataObject {
     function getStatusString()
     {
         switch ($this->getData('status')) {
-            case PT_STATUS_AVAILABLE:
+            case STATUS_AVAILABLE:
                 return __('plugins.generic.vgWort.pixelTag.status.available');
-            case PT_STATUS_UNREGISTERED_ACTIVE:
+            case STATUS_UNREGISTERED_ACTIVE:
                 if (!$this->isPublished()) {
                     return __('plugins.generic.vgWort.pixelTag.status.unregistered.active.notPublished');
                 }
                 return __('plugins.generic.vgWort.pixelTag.status.unregistered.active');
-            case PT_STATUS_UNREGISTERED_REMOVED:
+            case STATUS_UNREGISTERED_REMOVED:
                 return __('plugins.generic.vgWort.pixelTag.status.unregistered.removed');
-            case PT_STATUS_REGISTERED_ACTIVE:
+            case STATUS_REGISTERED_ACTIVE:
                 return __('plugins.generic.vgWort.pixelTag.status.registered.active');
-            case PT_STATUS_REGISTERED_REMOVED:
+            case STATUS_REGISTERED_REMOVED:
                 return __('plugins.generic.vgWort.pixelTag.status.registered.removed');
-            case PT_STATUS_FAILED:
+            case STATUS_FAILED:
                 return __('plugins.generic.vgWort.pixelTag.status.failed');
             default:
                 return __('plugins.generic.vgWort.pixelTag.status');

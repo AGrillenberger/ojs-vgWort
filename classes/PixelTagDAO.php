@@ -3,7 +3,10 @@
 namespace APP\plugins\generic\vgwort\classes;
 
 use PKP\db\DAO;
+use PKP\plugins\PluginRegistry;
+use PKP\plugins\Hook;
 // import('lib.pkp.classes.db.DAO');
+use APP\plugins\generic\vgwort\classes\PixelTag;
 
 define('PT_FIELD_PRIVCODE', 'private_code');
 define('PT_FIELD_PUBCODE', 'public_code');
@@ -19,7 +22,7 @@ class PixelTagDAO extends DAO {
 
     function newDataObject() {
         $vgWortPlugin = PluginRegistry::getPlugin('generic', $this->parentPluginName);
-        $vgWortPlugin->import('classes.PixelTag');
+        // $vgWortPlugin->import('classes.PixelTag');
 
         return new PixelTag();
     }
@@ -57,7 +60,7 @@ class PixelTagDAO extends DAO {
         $pixelTag->setTextType($row['text_type']);
         $pixelTag->setMessage($row['message']);
 
-        HookRegistry::call('PixelTagDAO::_fromRow', [&$pixelTag, &$row]);
+        Hook::call('PixelTagDAO::_fromRow', [&$pixelTag, &$row]);
 
         return $pixelTag;
     }
@@ -211,8 +214,8 @@ class PixelTagDAO extends DAO {
     }
 
     function getAllForRegistration($contextId, $publicationDate = NULL) {
-        import('classes.publication.Publication');
-        $params = array((int) $contextId, PT_STATUS_UNREGISTERED_ACTIVE, STATUS_DECLINED);
+        // TODO: import('classes.publication.Publication');
+        $params = array((int) $contextId, PixelTag::STATUS_UNREGISTERED_ACTIVE, STATUS_DECLINED);
         $result = $this->retrieve(
             'SELECT pt.*
             FROM pixel_tags pt
@@ -234,7 +237,7 @@ class PixelTagDAO extends DAO {
             'SELECT * FROM pixel_tags
             WHERE context_id = ? AND submission_id IS NULL AND date_assigned IS NULL AND status = ?
             ORDER BY date_ordered',
-            array((int) $contextId, PT_STATUS_AVAILABLE)
+            array((int) $contextId, PixelTag::STATUS_AVAILABLE)
         );
         $row = $result->current();
         return $row ? $this->_fromRow((array) $row) : NULL;

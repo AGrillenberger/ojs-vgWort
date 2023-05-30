@@ -1,7 +1,12 @@
 <?php
 
-import('lib.pkp.classes.controllers.grid.GridRow');
-import('lib.pkp.classes.linkAction.request.RemoteActionConfirmationModal');
+namespace APP\plugins\generic\vgwort\controllers\grid;
+
+use PKP\controllers\grid\GridRow;
+use PKP\linkAction\request\RemoteActionConfirmationModal;
+
+// import('lib.pkp.classes.controllers.grid.GridRow');
+// import('lib.pkp.classes.linkAction.request.RemoteActionConfirmationModal');
 
 class PixelTagGridRow extends GridRow {
 
@@ -17,7 +22,7 @@ class PixelTagGridRow extends GridRow {
             $pixelTagStatus = $pixelTag->getStatus();
 
             switch ($pixelTagStatus) {
-                case PT_STATUS_UNREGISTERED_ACTIVE:
+                case STATUS_UNREGISTERED_ACTIVE:
                     if ($pixelTag->isPublished()) {
                         $this->addAction(
                             new LinkAction(

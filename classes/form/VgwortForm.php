@@ -1,8 +1,12 @@
 <?php
 
-namespace APP\plugins\generic\vgwort;
+namespace APP\plugins\generic\vgwort\classes\form;
 
-use \PKP\components\forms\FormComponent;
+use APP\plugins\generic\vgwort\VgwortPlugin;
+use APP\plugins\generic\vgwort\classes\PixelTag;
+use PKP\components\forms\FormComponent;
+use PKP\db\DAORegistry;
+
 
 define('FORM_VGWORT', 'vgwortform');
 
@@ -23,10 +27,10 @@ class VgwortForm extends FormComponent {
 
         $this->pixelTagStatusLabels = [
             0 => __('plugins.generic.vgWort.pixelTag.status.notassigned'),
-            PT_STATUS_REGISTERED_ACTIVE => __('plugins.generic.vgWort.pixelTag.status.registered.active'),
-            PT_STATUS_UNREGISTERED_ACTIVE => __('plugins.generic.vgWort.pixelTag.status.unregistered.active'),
-            PT_STATUS_REGISTERED_REMOVED => __('plugins.generic.vgWort.pixelTag.status.registered.removed'),
-            PT_STATUS_UNREGISTERED_REMOVED => __('plugins.generic.vgWort.pixelTag.status.unregistered.removed')
+            PixelTag::STATUS_REGISTERED_ACTIVE => __('plugins.generic.vgWort.pixelTag.status.registered.active'),
+            PixelTag::STATUS_UNREGISTERED_ACTIVE => __('plugins.generic.vgWort.pixelTag.status.unregistered.active'),
+            PixelTag::STATUS_REGISTERED_REMOVED => __('plugins.generic.vgWort.pixelTag.status.registered.removed'),
+            PixelTag::STATUS_UNREGISTERED_REMOVED => __('plugins.generic.vgWort.pixelTag.status.unregistered.removed')
         ];
 
         $pixelTagDao = DAORegistry::getDAO('PixelTagDAO');
@@ -46,13 +50,13 @@ class VgwortForm extends FormComponent {
             $pixelTagStatus = $pixelTag->getStatus();
         }
 
-        if ($pixelTagStatus == PT_STATUS_UNREGISTERED_ACTIVE || $pixelTagStatus == PT_STATUS_REGISTERED_ACTIVE) {
+        if ($pixelTagStatus == PixelTag::STATUS_UNREGISTERED_ACTIVE || $pixelTagStatus == PixelTag::STATUS_REGISTERED_ACTIVE) {
             $pixelTagAssigned = true;
             $pixelTagRemoved = false;
 
             $publication->setData('vgWort::pixeltag::assign', $pixelTagAssigned);
             $publication->setData('vgWort::pixeltag::remove', $pixelTagRemoved);
-        } elseif ($pixelTagStatus == PT_STATUS_UNREGISTERED_REMOVED || $pixelTagStatus == PT_STATUS_REGISTERED_REMOVED) {
+        } elseif ($pixelTagStatus == PixelTag::STATUS_UNREGISTERED_REMOVED || $pixelTagStatus == PixelTag::STATUS_REGISTERED_REMOVED) {
             $pixelTagAssigned = false;
             $pixelTagRemoved = true;
 
@@ -63,14 +67,14 @@ class VgwortForm extends FormComponent {
         $this->addField(new \PKP\components\forms\FieldSelect('vgWort::texttype', [
             'label' => __('plugins.generic.vgWort.pixelTag.textType'),
             'description' => __('plugins.generic.vgWort.pixelTag.textType.description'),
-            'value' => TYPE_TEXT,
+            'value' => PixelTag::TYPE_TEXT,
             'options' => [
                 [
-                    'value' => TYPE_TEXT,
+                    'value' => PixelTag::TYPE_TEXT,
                     'label' => __('plugins.generic.vgWort.pixelTag.textType.text')
                 ],
                 [
-                    'value' => TYPE_LYRIC,
+                    'value' => PixelTag::TYPE_LYRIC,
                     'label' => __('plugins.generic.vgWort.pixelTag.textType.lyric')
                 ]
             ]

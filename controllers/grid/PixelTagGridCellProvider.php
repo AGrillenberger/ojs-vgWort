@@ -1,6 +1,14 @@
 <?php
 
-import('lib.pkp.classes.controllers.grid.GridCellProvider');
+namespace APP\plugins\generic\vgwort\controllers\grid;
+
+use PKP\core\PKPApplication;
+use PKP\controllers\grid\GridCellProvider;
+use PKP\controllers\grid\GridHandler;
+use PKP\linkAction\LinkAction;
+use PKP\linkAction\request\RedirectAction;
+
+// import('lib.pkp.classes.controllers.grid.GridCellProvider');
 
 class PixelTagGridCellProvider extends GridCellProvider {
 

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @file VGWortPlugin.inc.php
+ * @file VGWortPlugin.php
  *
  * Copyright (c) 2018 Center for Digital Systems (CeDiS), Freie Universität Berlin
  * Copyright (c) 2022 Heidelberg University Library
@@ -17,15 +17,23 @@ use PKP\plugins\Hook;
 use PKP\plugins\PluginRegistry;
 use PKP\plugins\SubmissionFile;
 use PKP\plugins\FieldOptions;
+
 use PKP\db\DAORegistry;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
 use PKP\core\JSONMessage;
+use PKP\core\PKPApplication;
+use PKP\core\Core;
+
+use APP\plugins\generic\vgwort\classes\form\VgwortForm;
+use APP\plugins\generic\vgwort\classes\VgwortEditorAction;
+use APP\plugins\generic\vgwort\classes\PixelTagDAO;
+use APP\plugins\generic\vgwort\classes\PixelTag;
+use APP\plugins\generic\vgwort\controllers\grid\PixelTagGridHandler;
 
 use APP\facades\Repo;
-
 use APP\core\Application;
-
+use APP\notification\NotificationManager;
 
 define('NOTIFICATION_TYPE_VGWORT_ERROR', 0x400000A);
 
@@ -38,6 +46,7 @@ class VgwortPlugin extends GenericPlugin {
         'vgWort::pixeltag::remove'
     ];
 
+    
     /**
      * @copydoc GenericPlugin::register()
      */
@@ -46,10 +55,7 @@ class VgwortPlugin extends GenericPlugin {
         // Register the plugin even when it is not enabled.
         $success = parent::register($category, $path);
         if ($success && $this->getEnabled()) {
-            // $this->import('classes.form.VGWortForm');
-            // $this->import('classes.PixelTag');
-            // $this->import('classes.PixelTagDAO');
-            $pixelTagDao = new classes\PixelTagDAO($this->getName());
+            $pixelTagDao = new PixelTagDAO($this->getName());
             $returner = DAORegistry::registerDAO('PixelTagDAO', $pixelTagDao);
 
             // Extend Schemas and DAOs for some new properties.
@@ -144,13 +150,13 @@ class VgwortPlugin extends GenericPlugin {
     }
 
     // TODO: SOAP will no longer be used. Other requirements need to be checked.
-    function requirementsFulfilled()
-    {
-        $isSoapExtension = in_array('soap', get_loaded_extensions());
-        $isOpenSSL = in_array('openssl', get_loaded_extensions());
-        $isCURL = function_exists('curl_init');
-        return $isSoapExtension && $isOpenSSL && $isCURL;
-    }
+    // function requirementsFulfilled()
+    // {
+    //     $isSoapExtension = in_array('soap', get_loaded_extensions());
+    //     $isOpenSSL = in_array('openssl', get_loaded_extensions());
+    //     $isCURL = function_exists('curl_init');
+    //     return $isSoapExtension && $isOpenSSL && $isCURL;
+    // }
 
     /**
      * Return the canonical template path of this plugin.
@@ -194,7 +200,7 @@ class VgwortPlugin extends GenericPlugin {
         // Create a LinkAction that will make a request to the
         // plugin's `manage` method with the `settings` verb.
         $router = $request->getRouter();
-        import('lib.pkp.classes.linkAction.request.AjaxModal');
+        // import('lib.pkp.classes.linkAction.request.AjaxModal');
         $linkAction = new LinkAction(
             'settings',
             new AjaxModal(
@@ -339,6 +345,7 @@ class VgwortPlugin extends GenericPlugin {
     {
         switch ($hookName) {
             case 'Template::Settings::distribution':
+                // error_log("distributionNavLink");
                 $smarty =& $args[1];
                 $output =& $args[2];
                 $templateFile = method_exists($this, 'getTemplateResource')
@@ -486,16 +493,16 @@ class VgwortPlugin extends GenericPlugin {
             $pixelTagStatus = $chapter->getData("vgWort::pixeltag::status");
             $chapterForm->setData("vgWortPixeltagStatus", $pixelTagStatus);
             switch ($pixelTagStatus) {
-                case PT_STATUS_REGISTERED_ACTIVE:
+                case PixelTag::STATUS_REGISTERED_ACTIVE:
                     $chapterForm->setData("vgWortAssignRemoveCheckbox", "vgWortAssignPixelTag");
                     break;
-                case PT_STATUS_UNREGISTERED_ACTIVE:
+                case PixelTag::STATUS_UNREGISTERED_ACTIVE:
                     $chapterForm->setData("vgWortAssignRemoveCheckbox", "vgWortAssignPixelTag");
                     break;
-                case PT_STATUS_REGISTERED_REMOVED:
+                case PixelTag::STATUS_REGISTERED_REMOVED:
                     $chapterForm->setData("vgWortAssignRemoveCheckbox", "vgWortRemovePixelTag");
                     break;
-                case PT_STATUS_UNREGISTERED_REMOVED:
+                case PixelTag::STATUS_UNREGISTERED_REMOVED:
                     $chapterForm->setData("vgWortAssignRemoveCheckbox", "vgWortRemovePixelTag");
                     break;
             }
@@ -617,7 +624,7 @@ class VgwortPlugin extends GenericPlugin {
                 $templateMgr->registerFilter('output', [$this, 'insertPixelTagIssueTOC']);
                 break;
             case 'workflow/workflow.tpl':
-                $this->import('classes.form.VGWortForm');
+                // $this->import('classes.form.VGWortForm');
                 $context = $templateMgr->getTemplateVars('currentContext');
                 $submission = $templateMgr->getTemplateVars('submission');
 
@@ -629,7 +636,7 @@ class VgwortPlugin extends GenericPlugin {
                     'submissions/' . $submission->getId() . '/publications/' . $submission->getLatestPublication()->getId()
                 );
 
-                $form = new VGWortForm($latestPublicationApiUrl, [], $context, $submission);
+                $form = new VgwortForm($latestPublicationApiUrl, [], $context, $submission);
 
                 // Use "getState()" (instead of "setState()") to avoid
                 // accidentally overwriting additional components on page.
@@ -732,7 +739,7 @@ class VgwortPlugin extends GenericPlugin {
     function setupGridHandler($hookName, $args)
     {
         $component =& $args[0];
-        if ($component == 'plugins.generic.vgWort.controllers.grid.PixelTagGridHandler') {
+        if ($component == 'plugins.generic.vgwort.controllers.grid.PixelTagGridHandler') {
             define('VGWORT_PLUGIN_NAME', $this->getName());
             return true;
         }
@@ -862,10 +869,10 @@ class VgwortPlugin extends GenericPlugin {
                 $vgWortAssignPixel = $pubObject->getData('vgWort::pixeltag::assign') ? 1 : 0;
                 if ($vgWortAssignPixel) {
                     $pixelTag->setDateRemoved(NULL);
-                    if ($pixelTag->getStatus() == PT_STATUS_UNREGISTERED_REMOVED) {
-                        $pixelTag->setStatus(PT_STATUS_UNREGISTERED_ACTIVE);
-                    } elseif ($pixelTag->getStatus() == PT_STATUS_REGISTERED_REMOVED) {
-                        $pixelTag->setStatus(PT_STATUS_REGISTERED_ACTIVE);
+                    if ($pixelTag->getStatus() == PixelTag::STATUS_UNREGISTERED_REMOVED) {
+                        $pixelTag->setStatus(PixelTag::STATUS_UNREGISTERED_ACTIVE);
+                    } elseif ($pixelTag->getStatus() == PixelTag::STATUS_REGISTERED_REMOVED) {
+                        $pixelTag->setStatus(PixelTag::STATUS_REGISTERED_ACTIVE);
                     }
                     $updatePixelTag = true;
                 }
@@ -873,10 +880,10 @@ class VgwortPlugin extends GenericPlugin {
                 $removeVGWortPixel = $pubObject->getData('vgWort::pixeltag::assign') ? 0 : 1;
                 if ($removeVGWortPixel) {
                     $pixelTag->setDateRemoved(Core::getCurrentDate());
-                    if ($pixelTag->getStatus() == PT_STATUS_UNREGISTERED_ACTIVE) {
-                        $pixelTag->setStatus(PT_STATUS_UNREGISTERED_REMOVED);
-                    } elseif ($pixelTag->getStatus() == PT_STATUS_REGISTERED_ACTIVE) {
-                        $pixelTag->setStatus(PT_STATUS_REGISTERED_REMOVED);
+                    if ($pixelTag->getStatus() == PixelTag::STATUS_UNREGISTERED_ACTIVE) {
+                        $pixelTag->setStatus(PixelTag::STATUS_UNREGISTERED_REMOVED);
+                    } elseif ($pixelTag->getStatus() == PixelTag::STATUS_REGISTERED_ACTIVE) {
+                        $pixelTag->setStatus(PixelTag::STATUS_REGISTERED_REMOVED);
                     }
                     $updatePixelTag = true;
                 }
@@ -925,7 +932,7 @@ class VgwortPlugin extends GenericPlugin {
             return false;
         }
         $submissionId = $publication->getData('submissionId');
-        $submissionFileDao =& DAORegistry::getDAO('SubmissionFileDAO');
+        // $submissionFileDao =& DAORegistry::getDAO('SubmissionFileDAO');
 
         $submission = Repo::submission()->get($submissionId);
 
@@ -957,15 +964,14 @@ class VgwortPlugin extends GenericPlugin {
 
         if(!$availablePixelTag) {
             // order pixel tags
-            $this->import('classes.VGWortEditorAction');
-            $vgWortEditorAction = new VGWortEditorAction($this);
+            // $this->import('classes.VGWortEditorAction');
+            $vgWortEditorAction = new VgwortEditorAction($this);
             $orderResult = $vgWortEditorAction->orderPixel($contextId);
             if (!$orderResult[0]) {
                 $application = PKPApplication::getApplication();
                 $request = Application::get()->getRequest();
                 $user = $request->getUser();
                 // Create a form error notification.
-                import('classes.notification.NotificationManager');
                 $notificationManager = new NotificationManager();
                 $notificationManager->createTrivialNotification(
                     $user->getId(), NOTIFICATION_TYPE_FORM_ERROR, ['contents' => $orderResult[1]]
@@ -981,7 +987,7 @@ class VgwortPlugin extends GenericPlugin {
         // there is an available pixel tag --> assign
         $availablePixelTag->setSubmissionId($submission->getId());
         $availablePixelTag->setDateAssigned(Core::getCurrentDate());
-        $availablePixelTag->setStatus(PT_STATUS_UNREGISTERED_ACTIVE);
+        $availablePixelTag->setStatus(PixelTag::STATUS_UNREGISTERED_ACTIVE);
         $availablePixelTag->setTextType($vgWortTextType);
         if ($chapterId) {
             $availablePixelTag->setChapterId($chapterId);
@@ -1011,8 +1017,8 @@ class VgwortPlugin extends GenericPlugin {
     function getSubmissionFiles($submission, $publicationFormat)
     {
         $publication = $submission->getCurrentPublication();
-        import('lib.pkp.classes.submission.SubmissionFile'); // File constants
-        $submissionFiles = Services::get('submissionFile')->getMany([
+        // import('lib.pkp.classes.submission.SubmissionFile'); // File constants
+        $submissionFiles = Repo::submissionFile()->getMany([
             'submissionIds' => [$publication->getData('submissionId')],
             'fileStages' => [SUBMISSION_FILE_PROOF],
             'assocTypes' => [ASSOC_TYPE_PUBLICATION_FORMAT],
