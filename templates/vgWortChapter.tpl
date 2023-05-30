@@ -8,8 +8,8 @@
  *
  *}
 <!-- VG Wort -->
-{fbvFormSection title="plugins.generic.vgWort.pixelTag.textType"}
-    {translate key="plugins.generic.vgWort.pixelTag.textType.description"}
+{fbvFormSection title="plugins.generic.vgwort.pixelTag.textType"}
+    {translate key="plugins.generic.vgwort.pixelTag.textType.description"}
     {fbvElement
         type="select"
         id="vgWortTextType"
@@ -21,7 +21,7 @@
     }
 {/fbvFormSection}
 
-{fbvFormArea title="plugins.generic.vgWort.pixelTag"}
+{fbvFormArea title="plugins.generic.vgwort.pixelTag"}
     <!-- {fbvElement type="text" id="vgWortAssignRemoveCheckbox" value="" label="vgWortAssignRemoveCheckbox"} -->
     {fbvFormSection list="true"}
         {fbvElement
@@ -29,7 +29,7 @@
             id="vgWortAssignPixelTag"
             name="vgWortAssignRemoveCheckbox"
             value="vgWortAssignPixelTag"
-            label="plugins.generic.vgWort.pixelTag.assign"
+            label="plugins.generic.vgwort.pixelTag.assign"
             checked=$vgWortAssignRemoveCheckbox|compare:vgWortAssignPixelTag
         }
         {fbvElement
@@ -37,7 +37,7 @@
             id="vgWortRemovePixelTag"
             name="vgWortAssignRemoveCheckbox"
             value="vgWortRemovePixelTag"
-            label="plugins.generic.vgWort.pixelTag.remove"
+            label="plugins.generic.vgwort.pixelTag.remove"
             checked=$vgWortAssignRemoveCheckbox|compare:vgWortRemovePixelTag
         }
     {/fbvFormSection}

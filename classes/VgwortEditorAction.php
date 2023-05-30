@@ -50,7 +50,7 @@ class VGWortEditorAction {
 
         try {
             if (!$vgWortPlugin->requirementsFulfilled()) {
-                return [false, __('plugins.generic.vgWort.requirementsRequired')];
+                return [false, __('plugins.generic.vgwort.requirementsRequired')];
             }
             $response = $httpClient->request(
                 'POST',
@@ -70,7 +70,7 @@ class VGWortEditorAction {
                 $responseBodyAsString = $response->getBody()->getContents();
                 $statusCode = $response->getStatusCode();
                 $reasonPhrase = $response->getReasonPhrase();
-                return [false, __('plugins.generic.vgWort.order.errorCode') . $reasonPhrase];
+                return [false, __('plugins.generic.vgwort.order.errorCode') . $reasonPhrase];
             }
         }
         catch (\GuzzleHttp\Exception\ServerException $e) {
@@ -122,11 +122,11 @@ class VGWortEditorAction {
         $publicationFormats = $publication->getData('publicationFormats');
 
         if ($submission->getData('status') != STATUS_PUBLISHED) {
-            return [false, __('plugins.generic.vgWort.check.articleNotPublished')];
+            return [false, __('plugins.generic.vgwort.check.articleNotPublished')];
         } else {
             $supportedPublicationFormats = array_filter($publicationFormats, [$this, '_checkPublicationFormatSupported']);
             if (empty($supportedPublicationFormats)) {
-                return [false, __('plugins.generic.vgWort.check.galleyRequired')];
+                return [false, __('plugins.generic.vgwort.check.galleyRequired')];
             } else {
                 foreach ($submission->getAuthors() as $author) {
                     $cardNo = $author->getData('vgWortCardNo');
@@ -172,7 +172,7 @@ class VGWortEditorAction {
                 $pixelTagDao->updateObject($pixelTag);
                 $this->_removeNotification($pixelTag);
                 $notificationType = NOTIFICATION_TYPE_SUCCESS;
-                $notificationMsg = __('plugins.generic.vgWort.pixelTags.register.success');
+                $notificationMsg = __('plugins.generic.vgwort.pixelTags.register.success');
             }
         }
         if ($isError) {
@@ -221,7 +221,7 @@ class VGWortEditorAction {
 
         try {
             if (!$vgWortPlugin->requirementsFulfilled()) {
-                return [false, __('plugins.generic.vgWort.requirementsRequired')];
+                return [false, __('plugins.generic.vgwort.requirementsRequired')];
             }
 
             $response = $httpClient->request(
@@ -243,7 +243,7 @@ class VGWortEditorAction {
                 $responseBodyAsString = $response->getBody()->getContents();
                 $statusCode = $response->getStatusCode();
                 $reasonPhrase = $response->getReasonPhrase();
-                return [false, __('plugins.generic.vgWort.order.errorCode') . $reasonPhrase];
+                return [false, __('plugins.generic.vgwort.order.errorCode') . $reasonPhrase];
             }
         }
         catch (\GuzzleHttp\Exception\ServerException $e) {
@@ -457,7 +457,7 @@ class VGWortEditorAction {
         error_log("VGWortEditorAction l.457");
         try {
             // if (!$vgWortPlugin->requirementsFulfilled()) {
-            //     return [false, __('plugins.generic.vgWort.requirementsRequired')];
+            //     return [false, __('plugins.generic.vgwort.requirementsRequired')];
             // }
             $response = $httpClient->request(
                 'POST',
@@ -479,7 +479,7 @@ class VGWortEditorAction {
                 $responseBodyAsString = $response->getBody()->getContents();
                 $statusCode = $response->getStatusCode();
                 $reasonPhrase = $response->getReasonPhrase();
-                return [false, __('plugins.generic.vgWort.order.errorCode') . $reasonPhrase];
+                return [false, __('plugins.generic.vgwort.order.errorCode') . $reasonPhrase];
             }
         }
         catch (\GuzzleHttp\Exception\ServerException $e) {

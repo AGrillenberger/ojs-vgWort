@@ -102,11 +102,11 @@ class VgwortPlugin extends GenericPlugin {
             Hook::add('Publication::edit', [$this, 'handleSubmissionFormExecute']);
 
             $this->pixelTagStatusLabels = [
-                0 => __('plugins.generic.vgWort.pixelTag.status.notassigned'),
-                classes\PixelTag::STATUS_REGISTERED_ACTIVE => __('plugins.generic.vgWort.pixelTag.status.registered.active'),
-                classes\PixelTag::STATUS_UNREGISTERED_ACTIVE => __('plugins.generic.vgWort.pixelTag.status.unregistered.active'),
-                classes\PixelTag::STATUS_REGISTERED_REMOVED => __('plugins.generic.vgWort.pixelTag.status.registered.removed'),
-                classes\PixelTag::STATUS_UNREGISTERED_REMOVED => __('plugins.generic.vgWort.pixelTag.status.unregistered.removed')
+                0 => __('plugins.generic.vgwort.pixelTag.status.notassigned'),
+                classes\PixelTag::STATUS_REGISTERED_ACTIVE => __('plugins.generic.vgwort.pixelTag.status.registered.active'),
+                classes\PixelTag::STATUS_UNREGISTERED_ACTIVE => __('plugins.generic.vgwort.pixelTag.status.unregistered.active'),
+                classes\PixelTag::STATUS_REGISTERED_REMOVED => __('plugins.generic.vgwort.pixelTag.status.registered.removed'),
+                classes\PixelTag::STATUS_UNREGISTERED_REMOVED => __('plugins.generic.vgwort.pixelTag.status.unregistered.removed')
             ];
 
         }
@@ -123,7 +123,7 @@ class VgwortPlugin extends GenericPlugin {
      */
     public function getDisplayName()
     {
-        return __('plugins.generic.vgWort.displayName');
+        return __('plugins.generic.vgwort.displayName');
     }
 
     /**
@@ -136,7 +136,7 @@ class VgwortPlugin extends GenericPlugin {
      */
     public function getDescription()
     {
-        return __('plugins.generic.vgWort.description');
+        return __('plugins.generic.vgwort.description');
     }
 
     /**
@@ -408,7 +408,7 @@ class VgwortPlugin extends GenericPlugin {
         $output =& $args[2];
 
         if ($hookName == 'Common::UserDetails::AdditionalItems') {
-            $smarty->assign('vgWortFieldTitle', 'plugins.generic.vgWort.cardNo');
+            $smarty->assign('vgWortFieldTitle', 'plugins.generic.vgwort.cardNo');
         }
         $templateFile = method_exists($this, 'getTemplateResource')
             ? $this->getTemplateResource('vgWortCardNo.tpl')
@@ -480,8 +480,8 @@ class VgwortPlugin extends GenericPlugin {
         }
 
         $vgWortTextTypes = [
-            TYPE_TEXT => __('plugins.generic.vgWort.pixelTag.textType.text'),
-            TYPE_LYRIC => __('plugins.generic.vgWort.pixelTag.textType.lyric')
+            TYPE_TEXT => __('plugins.generic.vgwort.pixelTag.textType.text'),
+            TYPE_LYRIC => __('plugins.generic.vgwort.pixelTag.textType.lyric')
         ];
         $chapterForm =& $args[0];
         $chapter = $chapterForm->getChapter();
@@ -723,7 +723,7 @@ class VgwortPlugin extends GenericPlugin {
             $form,
             'vgWortCardNo',
             'optional',
-            'plugins.generic.vgWort.cardNoValid',
+            'plugins.generic.vgwort.cardNoValid',
             '/^\d{2,7}$/'
         ));
         return false;
@@ -739,8 +739,10 @@ class VgwortPlugin extends GenericPlugin {
     function setupGridHandler($hookName, $args)
     {
         $component =& $args[0];
+        $componentInstance = & $args[2];
         if ($component == 'plugins.generic.vgwort.controllers.grid.PixelTagGridHandler') {
             define('VGWORT_PLUGIN_NAME', $this->getName());
+            $componentInstance = new PixelTagGridHandler();
             return true;
         }
         return false;

@@ -2,8 +2,14 @@
 
 namespace APP\plugins\generic\vgwort\controllers\grid;
 
+use APP\plugins\generic\vgwort\classes\PixelTag;
+
 use PKP\controllers\grid\GridRow;
+use PKP\linkAction\LinkAction;
+
 use PKP\linkAction\request\RemoteActionConfirmationModal;
+use PKP\db\DAORegistry;
+use PKP\db\DAO;
 
 // import('lib.pkp.classes.controllers.grid.GridRow');
 // import('lib.pkp.classes.linkAction.request.RemoteActionConfirmationModal');
@@ -22,15 +28,15 @@ class PixelTagGridRow extends GridRow {
             $pixelTagStatus = $pixelTag->getStatus();
 
             switch ($pixelTagStatus) {
-                case STATUS_UNREGISTERED_ACTIVE:
+                case PixelTag::STATUS_UNREGISTERED_ACTIVE:
                     if ($pixelTag->isPublished()) {
                         $this->addAction(
                             new LinkAction(
                                 'register',
                                 new RemoteActionConfirmationModal(
                                     $request->getSession(),
-                                    __('plugins.generic.vgWort.pixelTags.register.confirm'),
-                                    __('plugins.generic.vgWort.pixelTags.register'),
+                                    __('plugins.generic.vgwort.pixelTags.register.confirm'),
+                                    __('plugins.generic.vgwort.pixelTags.register'),
                                     $router->url(
                                         $request,
                                         NULL,
@@ -41,7 +47,7 @@ class PixelTagGridRow extends GridRow {
                                     ),
                                     'modal_confirm'
                                 ),
-                                __('plugins.generic.vgWort.pixelTags.register'),
+                                __('plugins.generic.vgwort.pixelTags.register'),
                                 'advance'
                             )
                         );

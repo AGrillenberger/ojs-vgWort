@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\vgwort\classes;
 
 use PKP\db\DAO;
+use PKP\db\DAOResultFactory;
 use PKP\plugins\PluginRegistry;
 use PKP\plugins\Hook;
 // import('lib.pkp.classes.db.DAO');

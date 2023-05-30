@@ -37,10 +37,10 @@
 
     {fbvFormArea
         id="vgWortUserIdPassword"
-        title="plugins.generic.vgWort.settings.vgWortUserIdPassword"
+        title="plugins.generic.vgwort.settings.vgWortUserIdPassword"
         class="border"
     }
-        <p>{translate key="plugins.generic.vgWort.settings.vgWortUserIdPassword.description"}</p>
+        <p>{translate key="plugins.generic.vgwort.settings.vgWortUserIdPassword.description"}</p>
 
         {fbvFormSection}
             {fbvElement
@@ -48,7 +48,7 @@
                 name="vgWortUserId"
                 id="vgWortUserId"
                 value=$vgWortUserId
-                label="plugins.generic.vgWort.settings.vgWortUserId"
+                label="plugins.generic.vgwort.settings.vgWortUserId"
                 required=true
                 size=$fbvStyles.size.MEDIUM
             }
@@ -61,7 +61,7 @@
                 name="vgWortUserPassword"
                 id="vgWortUserPassword"
                 value=$vgWortUserPassword
-                label="plugins.generic.vgWort.settings.vgWortUserPassword"
+                label="plugins.generic.vgwort.settings.vgWortUserPassword"
                 required=true
                 size=$fbvStyles.size.MEDIUM
             }
@@ -70,23 +70,23 @@
 
     {fbvFormArea
         id="vgWortRegistration"
-        title="plugins.generic.vgWort.settings.vgWortRegistration"
+        title="plugins.generic.vgwort.settings.vgWortRegistration"
         class="border"
     }
-        <p>{translate key="plugins.generic.vgWort.settings.vgWortRegistration.description"}</p>
+        <p>{translate key="plugins.generic.vgwort.settings.vgWortRegistration.description"}</p>
 
         {fbvFormSection}
             {fbvElement
                 type="text"
                 id="dateInYear"
                 name="dateInYear"
-                label="plugins.generic.vgWort.settings.vgWortRegistration.dateInYear"
+                label="plugins.generic.vgwort.settings.vgWortRegistration.dateInYear"
                 value=$dateInYear|date_format:$dateFormatShort
                 size=$fbvStyles.size.MEDIUM
                 class="datepicker"
                 inline=true
             }
-            <a href="#" onclick="javascript:clearDate()">{translate key="plugins.generic.vgWort.settings.clearDate"}</a>
+            <a href="#" onclick="javascript:clearDate()">{translate key="plugins.generic.vgwort.settings.clearDate"}</a>
         <!-- {/fbvFormSection}
 
         {fbvFormSection} -->
@@ -94,7 +94,7 @@
                 type="text"
                 id="daysAfterPublication"
                 name="daysAfterPublication"
-                label="plugins.generic.vgWort.settings.vgWortRegistration.daysAfterPublication"
+                label="plugins.generic.vgwort.settings.vgWortRegistration.daysAfterPublication"
                 value=$daysAfterPublication
                 size=$fbvStyles.size.MEDIUM
             }
@@ -103,7 +103,7 @@
 
     {fbvFormArea
         id="vgWortTestModeArea"
-        title="plugins.generic.vgWort.settings.vgWortTestMode"
+        title="plugins.generic.vgwort.settings.vgWortTestMode"
         class="border"
     }
         {fbvFormSection list="true"}
@@ -111,7 +111,7 @@
                 type="checkbox"
                 id="vgWortTestAPI"
                 name="vgWortTestAPI"
-                label="plugins.generic.vgWort.settings.vgWortTestMode.description"
+                label="plugins.generic.vgwort.settings.vgWortTestMode.description"
                 checked=$vgWortTestAPI|compare:true
             }
         {/fbvFormSection}

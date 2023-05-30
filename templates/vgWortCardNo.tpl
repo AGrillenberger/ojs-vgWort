@@ -11,7 +11,7 @@
 {fbvFormSection title=$vgWortFieldTitle}
     {fbvElement
         type="text"
-        label="plugins.generic.vgWort.cardNo.description"
+        label="plugins.generic.vgwort.cardNo.description"
         id="vgWortCardNo"
         name="vgWortCardNo"
         value=$vgWortCardNo

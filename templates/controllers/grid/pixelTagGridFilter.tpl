@@ -16,7 +16,7 @@
 		{rdelim}
 	);
 </script>
-<form class="pkp_form filter" id="pixelTagsListFilter" action="{url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.vgWort.controllers.grid.PixelTagGridHandler" op="fetchGrid"}" method="post">
+<form class="pkp_form filter" id="pixelTagsListFilter" action="{url router=\PKP\core\PKPApplication::ROUTE_COMPONENT component="plugins.generic.vgwort.controllers.grid.PixelTagGridHandler" op="fetchGrid"}" method="post">
 	{csrf}
 	{fbvFormArea id="submissionSearchFormArea"|concat:$filterData.gridId}
 		{fbvFormSection}

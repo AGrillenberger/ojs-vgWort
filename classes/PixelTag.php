@@ -3,6 +3,11 @@
 namespace APP\plugins\generic\vgwort\classes;
 
 use \PKP\core\DataObject;
+use PKP\db\DAORegistry;
+
+use APP\facades\Repo;
+
+
 
 // define('PT_STATUS_ANY', '');
 // define('PT_STATUS_AVAILABLE', 0x01);
@@ -45,8 +50,9 @@ class PixelTag extends DataObject {
     }
 
     function &getSubmission() {
-        $submissionDao = DAORegistry::getDAO('SubmissionDAO');
-        $submission = $submissionDao->getById($this->getSubmissionId());
+        // $submissionDao = DAORegistry::getDAO('SubmissionDAO');
+        // $submission = $submissionDao->getById($this->getSubmissionId());
+        $submission = Repo::submission()->get($this->getSubmissionId());
         return $submission;
     }
 
@@ -131,23 +137,23 @@ class PixelTag extends DataObject {
     function getStatusString()
     {
         switch ($this->getData('status')) {
-            case STATUS_AVAILABLE:
-                return __('plugins.generic.vgWort.pixelTag.status.available');
-            case STATUS_UNREGISTERED_ACTIVE:
+            case PixelTag::STATUS_AVAILABLE:
+                return __('plugins.generic.vgwort.pixelTag.status.available');
+            case PixelTag::STATUS_UNREGISTERED_ACTIVE:
                 if (!$this->isPublished()) {
-                    return __('plugins.generic.vgWort.pixelTag.status.unregistered.active.notPublished');
+                    return __('plugins.generic.vgwort.pixelTag.status.unregistered.active.notPublished');
                 }
-                return __('plugins.generic.vgWort.pixelTag.status.unregistered.active');
-            case STATUS_UNREGISTERED_REMOVED:
-                return __('plugins.generic.vgWort.pixelTag.status.unregistered.removed');
-            case STATUS_REGISTERED_ACTIVE:
-                return __('plugins.generic.vgWort.pixelTag.status.registered.active');
-            case STATUS_REGISTERED_REMOVED:
-                return __('plugins.generic.vgWort.pixelTag.status.registered.removed');
-            case STATUS_FAILED:
-                return __('plugins.generic.vgWort.pixelTag.status.failed');
+                return __('plugins.generic.vgwort.pixelTag.status.unregistered.active');
+            case PixelTag::STATUS_UNREGISTERED_REMOVED:
+                return __('plugins.generic.vgwort.pixelTag.status.unregistered.removed');
+            case PixelTag::STATUS_REGISTERED_ACTIVE:
+                return __('plugins.generic.vgwort.pixelTag.status.registered.active');
+            case PixelTag::STATUS_REGISTERED_REMOVED:
+                return __('plugins.generic.vgwort.pixelTag.status.registered.removed');
+            case PixelTag::STATUS_FAILED:
+                return __('plugins.generic.vgwort.pixelTag.status.failed');
             default:
-                return __('plugins.generic.vgWort.pixelTag.status');
+                return __('plugins.generic.vgwort.pixelTag.status');
         }
     }
 
@@ -161,8 +167,8 @@ class PixelTag extends DataObject {
 
     function getTextTypeOptions() {
         static $textTypeOptions = [
-            TYPE_TEXT => 'plugins.generic.vgWort.pixelTag.textType.text',
-            TYPE_LYRIC => 'plugins.generic.vgWort.pixelTag.textType.lyric'
+            TYPE_TEXT => 'plugins.generic.vgwort.pixelTag.textType.text',
+            TYPE_LYRIC => 'plugins.generic.vgwort.pixelTag.textType.lyric'
         ];
         return $textTypeOptions;
     }

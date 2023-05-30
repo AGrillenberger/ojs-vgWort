@@ -7,17 +7,21 @@ use PKP\controllers\grid\GridCellProvider;
 use PKP\controllers\grid\GridHandler;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\RedirectAction;
+use PKP\config\Config;
+
+use APP\facades\Repo;
+use APP\core\Services;
 
 // import('lib.pkp.classes.controllers.grid.GridCellProvider');
 
 class PixelTagGridCellProvider extends GridCellProvider {
 
-    function getCellActions($request, $row, $column, $position = GRID_ACTION_POSITION_DEFAULT) {
+    function getCellActions($request, $row, $column, $position = GridHandler::GRID_ACTION_POSITION_DEFAULT) {
         $pixelTag = $row->getData();
         $columnId = $column->getId();
         assert(is_a($pixelTag, 'PixelTag') && !empty($columnId));
 
-        import('lib.pkp.classes.linkAction.request.RedirectAction');
+        // import('lib.pkp.classes.linkAction.request.RedirectAction');
         switch ($columnId) {
             case 'message':
                 if (!empty($pixelTag->getMessage())) {
@@ -34,10 +38,10 @@ class PixelTagGridCellProvider extends GridCellProvider {
                                     NULL,
                                     ['pixelTag' => $pixelTag->getId()]
                                 ),
-                                __('plugins.generic.vgWort.pixelTag.status.failed'),
+                                __('plugins.generic.vgwort.pixelTag.status.failed'),
                                 'failureMessage'
                             ),
-                            __('plugins.generic.vgWort.pixelTag.status.failed')
+                            __('plugins.generic.vgwort.pixelTag.status.failed')
                         )
                     ];
                 }
@@ -48,13 +52,15 @@ class PixelTagGridCellProvider extends GridCellProvider {
                 if ($submission) {
                     $title = $submission->getLocalizedTitle();
                     if (empty($title)) $title = __('common.untitled');
-                    $authorsInTitle = $submission->getShortAuthorString();
+                    $authorsInTitle = $submission->getCurrentPublication()->getShortAuthorString();
+                    // $authorsInTitle = $submission->getShortAuthorString();
                     $title = $authorsInTitle . '; ' . $title;
                     return [
                         new LinkAction(
                             'itemWorkflow',
                             new RedirectAction(
-                                Services::get('submission')->getWorkflowUrlByUserRoles($submission)
+                                Repo::submission()->getWorkflowUrlByUserRoles($submission)
+                                // Services::get('submission')->getWorkflowUrlByUserRoles($submission)
                             ),
                             $title
                         )
@@ -72,7 +78,8 @@ class PixelTagGridCellProvider extends GridCellProvider {
                         new LinkAction(
                             'itemWorkflow',
                             new RedirectAction(
-                                Services::get('submission')->getWorkflowUrlByUserRoles($submission)
+                                Repo::submission()->getWorkflowUrlByUserRoles($submission)
+                                // Services::get('submission')->getWorkflowUrlByUserRoles($submission)
                             ),
                             $title
                         )

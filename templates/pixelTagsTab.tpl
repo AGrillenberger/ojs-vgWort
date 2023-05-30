@@ -9,18 +9,18 @@
  *}
 <!-- VG Wort -->
 {fbvFormSection}
-	<p class="pkp_help">{translate key="plugins.generic.vgWort.pixelTag.LocalizationNotice"}</p>
+	<p class="pkp_help">{translate key="plugins.generic.vgwort.pixelTag.LocalizationNotice"}</p>
 {/fbvFormSection}
 {if $failedExists}
 	<div id="pixelTagsNotification" class="pkp_notification " style="display: block;">
 		<div id="pkp_notification_pixel_tags">
 			<span class="title">{translate key="notification.notification"}</span>
-			<span class="pdescription">{translate key="plugins.generic.vgWort.notification.vgWortErrorExists"}</span>
+			<span class="pdescription">{translate key="plugins.generic.vgwort.notification.vgWortErrorExists"}</span>
 		</div>
 	</div>
 {/if}
-{**{url|assign:pixelTagsGridUrl router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.vgWort.controllers.grid.PixelTagGridHandler" op="fetchGrid" escape=false}*}
-{capture assign="pixelTagsGridUrl"}{url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.vgWort.controllers.grid.PixelTagGridHandler" op="fetchGrid" escape=false}{/capture}
+{**{url|assign:pixelTagsGridUrl router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.vgwort.controllers.grid.PixelTagGridHandler" op="fetchGrid" escape=false}*}
+{capture assign="pixelTagsGridUrl"}{url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.vgwort.controllers.grid.PixelTagGridHandler" op="fetchGrid" escape=false}{/capture}
 {load_url_in_div id="pixelTagsGridContainer" url=$pixelTagsGridUrl}
 <!-- /VG Wort -->
 

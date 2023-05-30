@@ -11,15 +11,15 @@
 {fbvFormArea id="vgWortAssignPixelFormArea" class="border"}
 	{if $pubObject instanceof Submission}
 		{if !$pixelTag}
-			{fbvFormSection title="plugins.generic.vgWort.pixelTag"}
-				<p class="pkp_help">{translate key="plugins.generic.vgWort.pixelTag.textType.description"}</p>
+			{fbvFormSection title="plugins.generic.vgwort.pixelTag"}
+				<p class="pkp_help">{translate key="plugins.generic.vgwort.pixelTag.textType.description"}</p>
 				{fbvElement
                     type="select"
                     id="vgWortTextType"
                     name="vgWortTextType"
                     from=$typeOptions
                     selected=$vgWortTextType
-                    label="plugins.generic.vgWort.pixelTag.textType"
+                    label="plugins.generic.vgwort.pixelTag.textType"
                     translate=true
                     size=$fbvStyles.size.SMALL
                 }
@@ -31,57 +31,57 @@
                     name="vgWortAssignPixel"
                     value="1"
                     checked=true
-                    label="plugins.generic.vgWort.pixelTag.assign"
+                    label="plugins.generic.vgwort.pixelTag.assign"
                 }
 			{/fbvFormSection}
 		{else}
-			{fbvFormSection title="plugins.generic.vgWort.pixelTag"}
+			{fbvFormSection title="plugins.generic.vgwort.pixelTag"}
 			<div class="item pixelTag">
 				<div class="sub_item">
 					<span class="label">
-						{capture assign=privateCode}{translate key="plugins.generic.vgWort.pixelTag.privateCode"}{/capture}
+						{capture assign=privateCode}{translate key="plugins.generic.vgwort.pixelTag.privateCode"}{/capture}
 						{translate key="semicolon" label=$privateCode}
 					</span>
 					<span class="value">{$pixelTag->getPrivateCode()|escape}</span>
 				</div>
 				<div class="sub_item">
 					<span class="label">
-						{capture assign=publicCode}{translate key="plugins.generic.vgWort.pixelTag.publicCode"}{/capture}
+						{capture assign=publicCode}{translate key="plugins.generic.vgwort.pixelTag.publicCode"}{/capture}
 						{translate key="semicolon" label=$publicCode}
 					</span>
 					<span class="value">{$pixelTag->getPublicCode()|escape}</span>
 				</div>
 				<div class="sub_item">
 					<span class="label">
-						{capture assign=dateAssigned}{translate key="plugins.generic.vgWort.pixelTag.dateAssigned"}{/capture}
+						{capture assign=dateAssigned}{translate key="plugins.generic.vgwort.pixelTag.dateAssigned"}{/capture}
 						{translate key="semicolon" label=$dateAssigned}
 					</span>
 					<span class="value">{$pixelTag->getDateAssigned()|date_format:$dateFormatShort|default:"&mdash;"}</span>
 				</div>
 				<div class="sub_item">
 					<span class="label">
-						{capture assign=dateRemoved}{translate key="plugins.generic.vgWort.pixelTag.dateRemoved"}{/capture}
+						{capture assign=dateRemoved}{translate key="plugins.generic.vgwort.pixelTag.dateRemoved"}{/capture}
 						{translate key="semicolon" label=$dateRemoved}
 					</span>
 					<span class="value">{$pixelTag->getDateRemoved()|date_format:$dateFormatShort|default:"&mdash;"}</span>
 				</div>
 				<div class="sub_item">
 					<span class="label">
-						{capture assign=dateRegistered}{translate key="plugins.generic.vgWort.pixelTag.dateRegistered"}{/capture}
+						{capture assign=dateRegistered}{translate key="plugins.generic.vgwort.pixelTag.dateRegistered"}{/capture}
 						{translate key="semicolon" label=$dateRegistered}
 					</span>
 					<span class="value">{$pixelTag->getDateRegistered()|date_format:$dateFormatShort|default:"&mdash;"}</span>
 				</div>
 				<div class="sub_item">
 					<span class="label">
-						{capture assign=status}{translate key="plugins.generic.vgWort.pixelTag.status"}{/capture}
+						{capture assign=status}{translate key="plugins.generic.vgwort.pixelTag.status"}{/capture}
 						{translate key="semicolon" label=$status}
 					</span>
 					<span class="value">{$pixelTag->getStatusString()|escape}</span>
 				</div>
 				<div class="sub_item">
 					<span class="label">
-						{capture assign=message}{translate key="plugins.generic.vgWort.pixelTag.message"}{/capture}
+						{capture assign=message}{translate key="plugins.generic.vgwort.pixelTag.message"}{/capture}
 						{translate key="semicolon" label=$message}
 					</span>
 					<span class="value">{$pixelTag->getMessage()|escape|default:"&mdash;"}</span>
@@ -89,20 +89,20 @@
 			</div>
 			{/fbvFormSection}
 			{fbvFormSection}
-				<p class="pkp_help">{translate key="plugins.generic.vgWort.pixelTag.textType.description"}</p>
+				<p class="pkp_help">{translate key="plugins.generic.vgwort.pixelTag.textType.description"}</p>
 				{fbvElement
                     type="select"
                     id="vgWortTextType"
                     name="vgWortTextType"
                     from=$typeOptions
                     selected=$vgWortTextType
-                    label="plugins.generic.vgWort.pixelTag.textType"
+                    label="plugins.generic.vgwort.pixelTag.textType"
                     translate=true
                     size=$fbvStyles.size.SMALL
                 }
 			{/fbvFormSection}
 			{if $pixelTag->getDateRemoved()}
-				<p>{translate key="plugins.generic.vgWort.pixelTag.removed"}</p>
+				<p>{translate key="plugins.generic.vgwort.pixelTag.removed"}</p>
 				{fbvFormSection list=true}
 					{fbvElement
                         type="checkbox"
@@ -110,7 +110,7 @@
                         name="vgWortAssignPixel"
                         value="1"
                         checked=true
-                        label="plugins.generic.vgWort.pixelTag.assign"
+                        label="plugins.generic.vgwort.pixelTag.assign"
                     }
 				{/fbvFormSection}
 			{else}
@@ -120,39 +120,39 @@
                         id="removeVGWortPixel"
                         name="removeVGWortPixel"
                         value="1"
-                        label="plugins.generic.vgWort.pixelTag.remove"
+                        label="plugins.generic.vgwort.pixelTag.remove"
                     }
 				{/fbvFormSection}
 			{/if}
 		{/if}
 	{elseif $pubObject instanceof Representation}
 		{if !$pixelTag}
-			{fbvFormSection title="plugins.generic.vgWort.pixelTag"}
-				<p>{translate key="plugins.generic.vgWort.pixelTag.representation.notAssigned"}</p>
+			{fbvFormSection title="plugins.generic.vgwort.pixelTag"}
+				<p>{translate key="plugins.generic.vgwort.pixelTag.representation.notAssigned"}</p>
 			{/fbvFormSection}
 		{else}
 			{if $pixelTag->getDateRemoved()}
-				{fbvFormSection title="plugins.generic.vgWort.pixelTag"}
-					<p>{translate key="plugins.generic.vgWort.pixelTag.removed"}</p>
+				{fbvFormSection title="plugins.generic.vgwort.pixelTag"}
+					<p>{translate key="plugins.generic.vgwort.pixelTag.removed"}</p>
 				{/fbvFormSection}
 			{elseif $galleyNotSupported}
-				{fbvFormSection title="plugins.generic.vgWort.pixelTag"}
-					<p>{translate key="plugins.generic.vgWort.pixelTag.representation.notSupported"}</p>
+				{fbvFormSection title="plugins.generic.vgwort.pixelTag"}
+					<p>{translate key="plugins.generic.vgwort.pixelTag.representation.notSupported"}</p>
 				{/fbvFormSection}
 			{else}
 				{if $pubObject->getData('excludeVGWortAssignPixel')}
-					<p>{translate key="plugins.generic.vgWort.pixelTag.representation.excluded"}</p>
+					<p>{translate key="plugins.generic.vgwort.pixelTag.representation.excluded"}</p>
 				{else}
-					<p>{translate key="plugins.generic.vgWort.pixelTag.representation.assigned"}</p>
+					<p>{translate key="plugins.generic.vgwort.pixelTag.representation.assigned"}</p>
 				{/if}
-				{fbvFormSection list=true title="plugins.generic.vgWort.pixelTag"}
+				{fbvFormSection list=true title="plugins.generic.vgwort.pixelTag"}
 					{fbvElement
                         type="checkbox"
                         id="excludeVGWortAssignPixel"
                         name="excludeVGWortAssignPixel"
                         value="1"
                         checked=$excludeVGWortAssignPixel|compare:true
-                        label="plugins.generic.vgWort.pixelTag.representation.exclude"
+                        label="plugins.generic.vgwort.pixelTag.representation.exclude"
                     }
 				{/fbvFormSection}
 			{/if}

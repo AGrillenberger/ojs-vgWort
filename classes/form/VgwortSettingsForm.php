@@ -45,14 +45,14 @@ class VgwortSettingsForm extends Form {
             $this,
             'vgWortUserId',
             'required',
-            'plugins.generic.vgWort.settings.vgWortUserIdRequired'
+            'plugins.generic.vgwort.settings.vgWortUserIdRequired'
         ));
 
         $this->addCheck(new FormValidator(
             $this,
             'vgWortUserPassword',
             'required',
-            'plugins.generic.vgWort.settings.vgWortUserPasswordRequired'
+            'plugins.generic.vgwort.settings.vgWortUserPasswordRequired'
         ));
 
         // Always add POST and CSRF validation to secure the form.
