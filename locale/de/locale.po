@@ -1,0 +1,148 @@
+msgid "plugins.generic.vgwort.displayName"
+msgstr "VG Wort Plugin"
+
+msgid "plugins.generic.vgwort.description"
+msgstr "Dieses Plug-In erlaubt die Integration und Verwaltung von Zählpixeln der <a href="http://www.vgwort.de/" target="_blank">VG Wort</a> in OJS. Es benötigt einen VG-Wort-Verlagsaccount und das Setzen der Plug-In-Einstellungen."
+
+
+msgid "plugins.generic.vgwort.settings.vgWortUserIdPassword"
+msgstr "VG-Wort-Benutzer/innenname und -Passwort"
+
+msgid "plugins.generic.vgwort.settings.vgWortUserIdPassword.description"
+msgstr "Geben Sie Nutzer/innennamen und Passwort des VG-Wort-Verlagsaccounts ein, der für die Authentifizierung der VG-Wort-Dienste benutzt wird."
+
+msgid "plugins.generic.vgwort.settings.vgWortUserId"
+msgstr "VG-Wort-Benutzer/innenname"
+
+msgid "plugins.generic.vgwort.settings.vgWortUserPassword"
+msgstr "VG-Wort-Passwort"
+
+msgid "plugins.generic.vgwort.settings.vgWortRegistration"
+msgstr "Automatische Meldung"
+
+msgid "plugins.generic.vgwort.settings.vgWortRegistration.description"
+msgstr "Bestimmen Sie ein Datum im Jahr und/oder die Anzahl der Tage nach der Artikelpublikation. Die nicht gemeldeten und aktiven Zählmarken werden dann am definierten Datum jedes Jahr oder unter Berücksichtigung der definierten Zeit nach der Artikelpublikation automatisch bei VG Wort gemeldet. Falls beide Optionen gesetzt sind und das definierte Datum im Jahr einsetzt, es werden alle Zählpixel berücksichtigt, unabhängig vom Artikelpublikationsdatum. Wenn die Meldung einer Zählmarke fehlschlägt, es wird erneut versucht die Zählmarke zu melden bei der nächsten Ausführung der geplanten Aufgabe."
+
+msgid "plugins.generic.vgwort.settings.vgWortRegistration.dateInYear"
+msgstr "Datum im Jahr"
+
+msgid "plugins.generic.vgwort.settings.clearDate"
+msgstr "Leeren"
+
+msgid "plugins.generic.vgwort.settings.vgWortRegistration.daysAfterPublication"
+msgstr "Anzahl der Tage nach der Artikelpublikation"
+
+msgid "plugins.generic.vgwort.settings.vgWortTestMode"
+msgstr "Testmodus"
+
+msgid "plugins.generic.vgwort.settings.vgWortTestMode.description"
+msgstr "Die VG-Wort-Test-API (Testumgebung) benutzen. Bitte vergessen Sie nicht, diese Option vor dem Produktivbetrieb abzuwählen."
+
+
+msgid "plugins.generic.vgwort.distribution.pixelTags.tab"
+msgstr "Pixel Tags"
+
+msgid "plugins.generic.vgwort.distribution.pixelTags.LocalizationNotice"
+msgstr "Bitte beachten sie, dass die Daten in der Einreichungssprache des ausgewählten Artikels übertragen werden. Für Personen welche an der Ausschüttung von Tantiemen teilnehmen möchten, muss die Schreibweise der Namen indentisch sein zu der bei vgWort registrierten Schreibweise. Die Einreichungssprache kann in den Artikel-Metadaten ausgewählt werden."
+
+msgid "plugins.generic.vgwort.distribution.pixelTags.codes"
+msgstr "Privater und Öffentlicher Code"
+
+msgid "plugins.generic.vgwort.distribution.pixelTags.domain"
+msgstr "Domain"
+
+msgid "plugins.generic.vgwort.distribution.pixelTags.message"
+msgstr "Fehlermeldung"
+
+msgid "plugins.generic.vgwort.distribution.pixelTags.dates"
+msgstr "Bestellt, Zugewiesen, Gemeldet, Entfernt"
+
+
+msgid "plugins.generic.vgwort.pixelTag.textType"
+msgstr "Texttyp"
+
+msgid "plugins.generic.vgwort.pixelTag.textType.text"
+msgstr "Text"
+
+msgid "plugins.generic.vgwort.pixelTag.textType.lyric"
+msgstr "Gedicht"
+
+msgid "plugins.generic.vgwort.pixelTag.textType.description"
+msgstr "Wählen Sie den Texttyp "Gedicht" wenn der Beitrag weniger als 1800 Zeichen hat."
+
+msgid "plugins.generic.vgwort.pixelTag"
+msgstr "VG Wort Pixel Tag"
+
+msgid "plugins.generic.vgwort.pixelTag.assign"
+msgstr "Ein VG-Wort-Zählpixel diesem Artikel zuweisen."
+
+msgid "plugins.generic.vgwort.pixelTag.remove"
+msgstr "Das VG-Wort-Zählpixel von diesem Artikel entfernen."
+
+
+msgid "plugins.generic.vgWort.notification.vgWortError"
+msgstr "Die Meldung des VG-Wort-Zählpixels ist fehlgeschlagen."
+
+msgid "plugins.generic.vgWort.notification.vgWortErrorExists"
+msgstr "Es existieren fehlgeschlagene Zählpixelmeldungen."
+
+
+msgid "plugins.generic.vgWort.check.errorCode"
+msgstr "Ein nicht handhabbarer Fehler ({$faultcode}/{$faultstring}) ist beim überprüfen der Autoren aufgetreten."
+
+msgid "plugins.generic.vgWort.check.notValid"
+msgstr "Der/die Autor/in oder der/die Übersetzer/in {$surName} hat keine gültige VG-Wort-Karteinummer."
+
+msgid "plugins.generic.vgWort.check.errorCode100"
+msgstr "Ein technisches Problem ist aufgetreten. Bitte versuchen Sie es später noch einmal."
+
+msgid "plugins.generic.vgWort.check.galleyRequired"
+msgstr "Es wird eine PDF-, HTML- oder EPUB-Fahne benötigt, die kleiner als 15MB ist."
+
+msgid "plugins.generic.vgWort.check.articleNotPublished"
+msgstr "Der Artikel ist nicht veröffentlicht."
+
+
+msgid "plugins.generic.vgwort.pixelTag.status"
+msgstr "Status"
+
+msgid "plugins.generic.vgwort.pixelTag.status.available"
+msgstr "Verfügbar"
+
+msgid "plugins.generic.vgwort.pixelTag.status.unregistered.active"
+msgstr "Nicht gemeldet, aktiv"
+
+msgid "plugins.generic.vgwort.pixelTag.status.unregistered.active.notPublished"
+msgstr "Nicht gemeldet, aktiv (nicht veröffentlicht)"
+
+msgid "plugins.generic.vgwort.pixelTag.status.unregistered.removed"
+msgstr "Unregistered, removed"
+
+msgid "plugins.generic.vgwort.pixelTag.status.registered.active"
+msgstr "Gemeldet, aktiv"
+
+msgid "plugins.generic.vgwort.pixelTag.status.registered.removed"
+msgstr "Gemeldet, entfernt"
+
+msgid "plugins.generic.vgwort.pixelTag.status.failed"
+msgstr "Fehlgeschlagen"
+
+msgid "plugins.generic.vgwort.pixelTag.status.notassigned"
+msgstr "Not assigned"
+
+
+msgid "plugins.generic.vgwort.pixelTags.register"
+msgstr "Register"
+
+msgid "plugins.generic.vgwort.pixelTags.register.confirm"
+msgstr "Sind Sie sicher, dass Sie dieses Zählpixel melden möchten?"
+
+
+msgid "plugins.generic.vgwort.cardNo"
+msgstr "VG-Wort-Karteinummer"
+
+msgid "plugins.generic.vgwort.cardNo.description"
+msgstr "(Ihre VG-Wort-Karteinummer)"
+
+msgid "plugins.generic.vgwort.cardNoValid"
+msgstr "Bitte geben Sie eine gültige Karteinummer (2-7 Ziffern) an."
