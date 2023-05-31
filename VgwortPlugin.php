@@ -744,7 +744,8 @@ class VgwortPlugin extends GenericPlugin {
     /**
      *
      */
-    function insertPixelTagSubmissionPage($output, $templateMgr) {
+    function insertPixelTagSubmissionPage($output, $templateMgr)
+    {
         $press = $templateMgr->getTemplateVars('currentContext');
         $monograph = $templateMgr->getTemplateVars('publishedSubmission'); // NICHT "monograph"
 
@@ -996,7 +997,8 @@ class VgwortPlugin extends GenericPlugin {
      *
      * @param array $fileType
      */
-    function getSupportedFileTypes($fileType) {
+    function getSupportedFileTypes($fileType)
+    {
         return ($fileType == 'application/pdf' ||
         $fileType == 'application/epub+zip' ||
         // Added XML support. Check with vgWort if allowed
@@ -1027,7 +1029,8 @@ class VgwortPlugin extends GenericPlugin {
      *
      * @param SubmissionFile $submissionFile
      */
-    function getPublicationFormatId($submissionFile) {
+    function getPublicationFormatId($submissionFile)
+    {
         return $submissionFile->getData('assocId');
     }
 
@@ -1036,7 +1039,8 @@ class VgwortPlugin extends GenericPlugin {
      *
      * @param SubmissionFile $submissionFile
      */
-    function getLocaleFromSubmissionFile($submissionFile) {
+    function getLocaleFromSubmissionFile($submissionFile)
+    {
         return $submissionFile->getData('locale');
     }
 
@@ -1067,31 +1071,5 @@ class VgwortPlugin extends GenericPlugin {
         }
         // TODO: What if there are more than one book manuscript components?
     }
-
-    // /**
-    //  * Get all submission files of chapter documents.
-    //  *
-    //  * @param SubmissionFile
-    //  */
-    // function getChapterManuscriptFile($submissionFiles)
-    // {
-    //     // Get genre ID that corresponds to the chapter manuscript.
-    //     $genreDao = DAORegistry::getDAO('GenreDAO');
-    //     $genreChapter = $genreDao->getByKey('CHAPTER');
-    //     $genreIdChapter = $genreChapter->getId();
-    //
-    //     // // Create json because array_column does not accept SubmissionFile objects.
-    //     // $submissionFiles_json = json_decode(json_encode($submissionFiles), true);
-    //
-    //     $submissionFilesChapter = [];
-    //     foreach ($submissionFiles as $submissionFile) {
-    //         if ($submissionFile->getData('genreId') = $genreIdChapter) {
-    //             $submissionFilesChapter[] = $submissionFile;
-    //         }
-    //     }
-    //
-    //     return array_column($submissionFiles_array, NULL, 'genreId')[$genreIdManuscript];
-    // }
-
 
 }

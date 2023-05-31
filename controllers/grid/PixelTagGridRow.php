@@ -11,9 +11,6 @@ use PKP\linkAction\request\RemoteActionConfirmationModal;
 use PKP\db\DAORegistry;
 use PKP\db\DAO;
 
-// import('lib.pkp.classes.controllers.grid.GridRow');
-// import('lib.pkp.classes.linkAction.request.RemoteActionConfirmationModal');
-
 class PixelTagGridRow extends GridRow {
 
     function initialize($request, $template = null) {
