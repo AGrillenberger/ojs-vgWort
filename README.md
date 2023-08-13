@@ -1,3 +1,7 @@
+# DEVELOPMENT BRANCH FOR OJS 3.4
+No guarantee that anything works...
+
+
     ==========================================================
     === OJS VG Wort Plugin
     === Version: 2.1
