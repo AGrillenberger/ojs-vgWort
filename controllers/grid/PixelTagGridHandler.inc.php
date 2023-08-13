@@ -17,6 +17,13 @@ import('plugins.generic.vgWort.controllers.grid.PixelTagGridRow');
 // Link action & modal classes
 import('lib.pkp.classes.linkAction.request.AjaxModal');
 
+use PKP\security\authorization\PolicySet;
+use PKP\security\authorization\RoleBasedHandlerOperationPolicy;
+use PKP\security\Role;
+
+use PKP\controllers\grid\GridHandler;
+use PKP\controllers\grid\GridColumn;
+
 class PixelTagGridHandler extends GridHandler {
 
 	/**
@@ -25,7 +32,7 @@ class PixelTagGridHandler extends GridHandler {
 	function __construct() {
 		parent::__construct();
 		$this->addRoleAssignment(
-			array(ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR),
+			array(Role::ROLE_ID_MANAGER),
 			array(
 				'fetchGrid', 'fetchRow', 'pixelTagsTab', 'registerPixelTag', 'statusMessage'
 			)
@@ -51,7 +58,7 @@ class PixelTagGridHandler extends GridHandler {
 		$router = $request->getRouter();
 		$context = $request->getContext();
 
-		AppLocale::requireComponents(LOCALE_COMPONENT_APP_SUBMISSION, LOCALE_COMPONENT_PKP_COMMON);
+	//	AppLocale::requireComponents(LOCALE_COMPONENT_APP_SUBMISSION, LOCALE_COMPONENT_PKP_COMMON);
 
 		// Grid columns.
 		import('plugins.generic.vgWort.controllers.grid.PixelTagGridCellProvider');

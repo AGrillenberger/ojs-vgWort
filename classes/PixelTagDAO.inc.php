@@ -19,6 +19,8 @@ import('lib.pkp.classes.db.DAO');
 define('PT_FIELD_PRIVCODE', 	'private_code');
 define('PT_FIELD_PUBCODE', 		'public_code');
 
+use PKP\db\DAOResultFactory;
+
 class PixelTagDAO extends DAO {
 
 	/** @var $parentPluginName string Name of the parent plugin VGWortPlugin */
@@ -57,7 +59,7 @@ class PixelTagDAO extends DAO {
 			$params
 		);
 		$returner = null;
-		if ($result->RecordCount() != 0) {
+		if ($result->next()) {
 			$returner = $this->_fromRow($result->GetRowAssoc(false));
 		}
 		$result->Close();
@@ -268,7 +270,7 @@ class PixelTagDAO extends DAO {
 			$params
 		);
 		$returner = null;
-		if ($result->RecordCount() != 0) {
+		if ($result->next()) {
 			$returner = $this->_fromRow($result->GetRowAssoc(false));
 		}
 
@@ -316,7 +318,7 @@ class PixelTagDAO extends DAO {
 			1
 		);
 		$returner = null;
-		if (isset($result) && $result->RecordCount() != 0) {
+		if (isset($result) && $result->next()) {
 			$returner = $this->_fromRow($result->GetRowAssoc(false));
 		}
 		$result->Close();

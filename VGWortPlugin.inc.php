@@ -13,7 +13,7 @@
 */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
-import('lib.pkp.classes.submission.SubmissionFile');
+import('lib.pkp.classes.submissionFile.SubmissionFile');
 import('lib.pkp.classes.components.forms.FieldOptions');
 
 define('NOTIFICATION_TYPE_VGWORT_ERROR',0x400000A);
@@ -139,13 +139,6 @@ class VGWortPlugin extends GenericPlugin {
     function getTemplatePath($inCore = false) {
         $ojsVersion = Application::getApplication()->getCurrentVersion()->getVersionString();
         return parent::getTemplatePath();
-    }
-
-    /**
-     * @copydoc Plugin::getInstallSchemaFile()
-     */
-    function getInstallSchemaFile() {
-        return $this->getPluginPath() . '/xml/schema.xml';
     }
 
     /**
